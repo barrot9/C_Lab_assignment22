@@ -1,0 +1,217 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+
+// Define the type for set
+typedef unsigned long long int set;
+
+// Constants
+#define MAX_NUMBERS 128
+#define MAX_SETS 6
+#define MAX_LINE_LENGTH 100
+
+// Define sets
+set SETA = 0, SETB = 0, SETC = 0, SETD = 0, SETE = 0, SETF = 0;
+set *sets[MAX_SETS] = {&SETA, &SETB, &SETC, &SETD, &SETE, &SETF};
+
+// Function prototypes
+void read_set(char name, int numbers[]);
+void print_set(char name);
+void union_set(char names[], char result_name);
+void intersect_set(char names[], char result_name);
+void sub_set(char names[], char result_name);
+void symdiff_set(char names[], char result_name);
+
+int main() {
+    char command[MAX_LINE_LENGTH];
+    while (true) {
+        fgets(command, MAX_LINE_LENGTH, stdin);
+
+        // Parse command
+        char operation[20], set_names[MAX_LINE_LENGTH], result_set;
+        int numbers[MAX_NUMBERS];
+
+        if (sscanf(command, "%s", operation) == EOF) {
+            continue;
+        }
+
+        if (strcmp(operation, "stop") == 0) {
+            break; // stop the program
+        }
+        else if (strcmp(operation, "read_set") == 0) {
+            if (sscanf(command, "%*s %c %d", &set_names[0], &numbers[0]) != 2 || set_names[0] < 'A' || set_names[0] > 'F') {
+                printf("undefined set name\n");
+                continue;
+            }
+            read_set(set_names[0], numbers);
+        }
+        else if (strcmp(operation, "print_set") == 0) {
+            if (sscanf(command, "%*s %c", &set_names[0]) != 1 || set_names[0] < 'A' || set_names[0] > 'F') {
+                printf("undefined set name\n");
+                continue;
+            }
+            print_set(set_names[0]);
+        }
+        else if (strcmp(operation, "union_set") == 0) {
+            if (sscanf(command, "%*s %[^\n] %c", set_names, &result_set) != 2) {
+                printf("undefined command\n");
+                continue;
+            }
+            union_set(set_names, result_set);
+        }
+        else if (strcmp(operation, "intersect_set") == 0) {
+            if (sscanf(command, "%*s %[^\n] %c", set_names, &result_set) != 2) {
+                printf("undefined command\n");
+                continue;
+            }
+            intersect_set(set_names, result_set);
+        }
+        else if (strcmp(operation, "sub_set") == 0) {
+            if (sscanf(command, "%*s %[^\n] %c", set_names, &result_set) != 2) {
+                printf("undefined command\n");
+                continue;
+            }
+            sub_set(set_names, result_set);
+        }
+        else if (strcmp(operation, "symdiff_set") == 0) {
+            if (sscanf(command, "%*s %[^\n] %c", set_names, &result_set) != 2) {
+                printf("undefined command\n");
+                continue;
+            }
+            symdiff_set(set_names, result_set);
+        }
+        else {
+            printf("undefined command\n");
+        }
+    }
+    return 0;
+}
+
+void read_set(char name, int numbers[]) {
+    set *target_set;
+    switch (name) {
+        case 'A':
+            target_set = &SETA;
+            break;
+        case 'B':
+            target_set = &SETB;
+            break;
+        case 'C':
+            target_set = &SETC;
+            break;
+        case 'D':
+            target_set = &SETD;
+            break;
+        case 'E':
+            target_set = &SETE;
+            break;
+        case 'F':
+            target_set = &SETF;
+            break;
+        default:
+            return;
+    }
+
+    *target_set = 0;
+    int i = 0;
+    while (numbers[i] != -1 && i < MAX_NUMBERS) {
+        if (numbers[i] >= 0 && numbers[i] <= 127) {
+            *target_set |= 1ull << numbers[i];
+        }
+        i++;
+    }
+}
+
+void print_set(char name) {
+    set *target_set;
+    switch (name) {
+        case 'A':
+            target_set = &SETA;
+            break;
+        case 'B':
+            target_set = &SETB;
+            break;
+        case 'C':
+            target_set = &SETC;
+            break;
+        case 'D':
+            target_set = &SETD;
+            break;
+        case 'E':
+            target_set = &SETE;
+            break;
+        case 'F':
+            target_set = &SETF;
+            break;
+        default:
+            return;
+    }
+
+    printf("Set %c:", name);
+    bool empty = true;
+    for (int i = 0; i < 128; i++) {
+        if (*target_set & (1ull << i)) {
+            printf(" %d", i);
+            empty = false;
+        }
+    }
+    if (empty) {
+        printf(" (empty)");
+    }
+    printf("\n");
+}
+
+void union_set(char names[], char result_name) {
+    set *result_set;
+    switch (result_name) {
+        case 'A':
+            result_set = &SETA;
+            break;
+        case 'B':
+            result_set = &SETB;
+            break;
+        case 'C':
+            result_set = &SETC;
+            break;
+        case 'D':
+            result_set = &SETD;
+            break;
+        case 'E':
+            result_set = &SETE;
+            break;
+        case 'F':
+            result_set = &SETF;
+            break;
+        default:
+            return;
+    }
+
+    *result_set = 0;
+
+    char *token;
+    token = strtok(names, ",");
+    while (token != NULL) {
+        char set_name = token[1];
+        if (set_name >= 'A' && set_name <= 'F') {
+            set *set_to_union = sets[set_name - 'A'];
+            *result_set |= *set_to_union;
+        }
+        else {
+            printf("undefined set name\n");
+            return;
+        }
+        token = strtok(NULL, ",");
+    }
+}
+
+void intersect_set(char names[], char result_name) {
+    // Implement intersect_set function
+}
+
+void sub_set(char names[], char result_name) {
+    // Implement sub_set function
+}
+
+void symdiff_set(char names[], char result_name) {
+    // Implement symdiff_set function
+}
