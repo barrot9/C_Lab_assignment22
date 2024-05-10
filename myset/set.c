@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
-#include <stdlib.h> // Include stdlib.h for strtod function
+#include <stdlib.h> /* Include stdlib.h for strtod function */ 
 
 /* Define the type for set */
 typedef unsigned long long int set;
@@ -34,7 +34,7 @@ int main() {
 
         /* Parse command */
         char operation[20], set_names[MAX_LINE_LENGTH], result_set, extra;
-        char numbers[MAX_LINE_LENGTH]; // Changed to char array to read non-integer characters
+        char numbers[MAX_LINE_LENGTH]; /* Changed to char array to read non-integer characters */ 
         if (sscanf(trimmed_command, "%s", operation) == EOF) {
             continue;
         }
@@ -196,8 +196,8 @@ void read_set(char name, char numbers[]) {
     int i = 0;
     char *token = strtok(numbers, ",");
     while (token != NULL) {
-        double num = strtod(token, NULL); // Convert token to double
-        if (num == 0 && token[0] != '0') { // strtod returns 0 for non-numeric strings
+        double num = strtod(token, NULL); /* Convert token to double */ 
+        if (num == 0 && token[0] != '0') { /* strtod returns 0 for non-numeric strings */ 
             printf("invalid set member - not a number\n");
             return;
         }
