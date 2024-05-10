@@ -23,7 +23,7 @@ void intersect_set(char names[], char result_name);
 void sub_set(char names[], char result_name);
 void symdiff_set(char names[], char result_name);
 
-int main() {
+int main() { /* test commit */
     char command[MAX_LINE_LENGTH];
     while (true) {
         fgets(command, MAX_LINE_LENGTH, stdin);
