@@ -253,45 +253,6 @@ void print_set(char name) {
     printf("\n");
 }
 
-void print_set(char name) {
-    set *target_set;
-    switch (name) {
-        case 'A':
-            target_set = &SETA;
-            break;
-        case 'B':
-            target_set = &SETB;
-            break;
-        case 'C':
-            target_set = &SETC;
-            break;
-        case 'D':
-            target_set = &SETD;
-            break;
-        case 'E':
-            target_set = &SETE;
-            break;
-        case 'F':
-            target_set = &SETF;
-            break;
-        default:
-            return;
-    }
-
-    printf("Set %c:", name);
-    bool empty = true;
-    for (int i = 0; i < 128; i++) {
-        if (*target_set & (1ull << i)) {
-            printf(" %d", i);
-            empty = false;
-        }
-    }
-    if (empty) {
-        printf(" (empty)");
-    }
-    printf("\n");
-}
-
 void union_set(char names[], char result_name) {
     set *result_set;
     switch (result_name) {
