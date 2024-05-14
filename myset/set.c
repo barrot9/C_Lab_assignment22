@@ -1,13 +1,12 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
-#include <stdlib.h> /* Include stdlib.h for strtod function */ 
+#include <stdlib.h>
 
 /* Define the type for set */
 typedef unsigned long long int set;
 
 /* Constants */
-#define MAX_NUMBERS 128
 #define MAX_SETS 6
 #define MAX_LINE_LENGTH 100
 
@@ -16,14 +15,14 @@ set SETA = 0, SETB = 0, SETC = 0, SETD = 0, SETE = 0, SETF = 0;
 set *sets[MAX_SETS] = {&SETA, &SETB, &SETC, &SETD, &SETE, &SETF};
 
 /* Function prototypes */
-void read_set(char name, char numbers[]);
+void read_set(char name[], char numbers[]);
 void print_set(char name);
 void union_set(char names[], char result_name);
 void intersect_set(char names[], char result_name);
 void sub_set(char names[], char result_name);
 void symdiff_set(char names[], char result_name);
 
-int main() { /* test commit */
+int main() {
     char command[MAX_LINE_LENGTH];
     while (true) {
         printf("Please enter a command:\n");
@@ -35,127 +34,79 @@ int main() { /* test commit */
 
         /* Parse command */
         char operation[20], set_names[MAX_LINE_LENGTH], result_set, extra;
-        char numbers[MAX_LINE_LENGTH]; /* Changed to char array to read non-integer characters */ 
+        char numbers[MAX_LINE_LENGTH];
         if (sscanf(trimmed_command, "%s", operation) == EOF) {
             continue;
         }
 
         if (strcmp(operation, "stop") == 0) {
-            break; /* stop the program */
+            break;
         }
         else if (strcmp(operation, "read_set") == 0) {
-            if (sscanf(trimmed_command, "%*s %c %[^\n]", &set_names[0], numbers) != 2 || set_names[0] < 'A' || set_names[0] > 'F') {
+            if (sscanf(trimmed_command, "%*s %s %[^\n]", set_names, numbers) != 2 || strncmp(set_names, "SET", 3) != 0 || strlen(set_names) != 4) {
                 printf("undefined set name\n");
                 continue;
             }
-            if (sscanf(trimmed_command, "%*s %c %c", &extra, &extra) != EOF) {
+            if (sscanf(trimmed_command, "%*s %s %c", set_names, &extra) != EOF) {
                 printf("Extraneous text after end of command\n");
                 continue;
             }
-            read_set(set_names[0], numbers); /* read set */
+            read_set(set_names, numbers);
         }
         else if (strcmp(operation, "print_set") == 0) {
-            if (sscanf(trimmed_command, "%*s %c", &set_names[0]) != 1 || set_names[0] < 'A' || set_names[0] > 'F') {
+            if (sscanf(trimmed_command, "%*s %c", &result_set) != 1 || strncmp(&result_set, "SET", 3) != 0 || strlen(&result_set) != 4) {
                 printf("undefined set name\n");
                 continue;
             }
-            if (sscanf(trimmed_command, "%*s %c %c", &extra, &extra) != EOF) {
+            if (sscanf(trimmed_command, "%*s %c %c", &result_set, &extra) != EOF) {
                 printf("Extraneous text after end of command\n");
                 continue;
             }
-            print_set(set_names[0]); /* print set */
+            print_set(result_set);
         }
         else if (strcmp(operation, "union_set") == 0) {
-            if (sscanf(trimmed_command, "%*s %[^\n] %c", set_names, &result_set) != 2) {
-                printf("Missing parameter\n");
+            if (sscanf(trimmed_command, "%*s %s %c", set_names, &result_set) != 2 || strncmp(set_names, "SET", 3) != 0 || strlen(set_names) != 4) {
+                printf("undefined set name\n");
                 continue;
             }
-            if (strstr(set_names, ",,")) {
-                printf("multiple consecutive commas\n");
-                continue;
-            }
-            if (strstr(set_names, ",") == NULL) {
-                printf("missing comma\n");
-                continue;
-            }
-            if (set_names[0] == ',') {
-                printf("illegal comma\n");
-                continue;
-            }
-            if (sscanf(trimmed_command, "%*s %[^\n] %c %c", set_names, &result_set, &extra) != EOF) {
+            if (sscanf(trimmed_command, "%*s %s %c %c", set_names, &result_set, &extra) != EOF) {
                 printf("Extraneous text after end of command\n");
                 continue;
             }
-            union_set(set_names, result_set); /* union sets */
+            union_set(set_names, result_set);
         }
         else if (strcmp(operation, "intersect_set") == 0) {
-            if (sscanf(trimmed_command, "%*s %[^\n] %c", set_names, &result_set) != 2) {
-                printf("Missing parameter\n");
+            if (sscanf(trimmed_command, "%*s %s %c", set_names, &result_set) != 2 || strncmp(set_names, "SET", 3) != 0 || strlen(set_names) != 4) {
+                printf("undefined set name\n");
                 continue;
             }
-            if (strstr(set_names, ",,")) {
-                printf("multiple consecutive commas\n");
-                continue;
-            }
-            if (strstr(set_names, ",") == NULL) {
-                printf("missing comma\n");
-                continue;
-            }
-            if (set_names[0] == ',') {
-                printf("illegal comma\n");
-                continue;
-            }
-            if (sscanf(trimmed_command, "%*s %[^\n] %c %c", set_names, &result_set, &extra) != EOF) {
+            if (sscanf(trimmed_command, "%*s %s %c %c", set_names, &result_set, &extra) != EOF) {
                 printf("Extraneous text after end of command\n");
                 continue;
             }
-            intersect_set(set_names, result_set); /* intersect sets */
+            intersect_set(set_names, result_set);
         }
         else if (strcmp(operation, "sub_set") == 0) {
-            if (sscanf(trimmed_command, "%*s %[^\n] %c", set_names, &result_set) != 2) {
-                printf("Missing parameter\n");
+            if (sscanf(trimmed_command, "%*s %s %c", set_names, &result_set) != 2 || strncmp(set_names, "SET", 3) != 0 || strlen(set_names) != 4) {
+                printf("undefined set name\n");
                 continue;
             }
-            if (strstr(set_names, ",,")) {
-                printf("multiple consecutive commas\n");
-                continue;
-            }
-            if (strstr(set_names, ",") == NULL) {
-                printf("missing comma\n");
-                continue;
-            }
-            if (set_names[0] == ',') {
-                printf("illegal comma\n");
-                continue;
-            }
-            if (sscanf(trimmed_command, "%*s %[^\n] %c %c", set_names, &result_set, &extra) != EOF) {
+            if (sscanf(trimmed_command, "%*s %s %c %c", set_names, &result_set, &extra) != EOF) {
                 printf("Extraneous text after end of command\n");
                 continue;
             }
-            sub_set(set_names, result_set); /* subtract sets */
+            sub_set(set_names, result_set);
         }
         else if (strcmp(operation, "symdiff_set") == 0) {
-            if (sscanf(trimmed_command, "%*s %[^\n] %c", set_names, &result_set) != 2) {
-                printf("Missing parameter\n");
+            if (sscanf(trimmed_command, "%*s %s %c", set_names, &result_set) != 2 || strncmp(set_names, "SET", 3) != 0 || strlen(set_names) != 4) {
+                printf("undefined set name\n");
                 continue;
             }
-            if (strstr(set_names, ",,")) {
-                printf("multiple consecutive commas\n");
-                continue;
-            }
-            if (strstr(set_names, ",") == NULL) {
-                printf("missing comma\n");
-                continue;
-            }
-            if (set_names[0] == ',') {
-                printf("illegal comma\n");
-                continue;
-            }
-            if (sscanf(trimmed_command, "%*s %[^\n] %c %c", set_names, &result_set, &extra) != EOF) {
+            if (sscanf(trimmed_command, "%*s %s %c %c", set_names, &result_set, &extra) != EOF) {
                 printf("Extraneous text after end of command\n");
                 continue;
             }
-            symdiff_set(set_names, result_set); /* symmetric difference sets */
+            symdiff_set(set_names, result_set);
         }
         else {
             printf("undefined command\n");
@@ -164,9 +115,9 @@ int main() { /* test commit */
     return 0;
 }
 
-void read_set(char name, char numbers[]) {
+void read_set(char name[], char numbers[]) {
     set *target_set;
-    switch (name) {
+    switch (name[3]) {
         case 'A':
             target_set = &SETA;
             break;
@@ -190,11 +141,10 @@ void read_set(char name, char numbers[]) {
     }
 
     *target_set = 0;
-    int i = 0;
     char *token = strtok(numbers, ",");
     while (token != NULL) {
-        double num = strtod(token, NULL); /* Convert token to double */ 
-        if (num == 0 && token[0] != '0') { /* strtod returns 0 for non-numeric strings */ 
+        double num = strtod(token, NULL);
+        if (num == 0 && token[0] != '0') {
             printf("invalid set member - not a number\n");
             return;
         }
@@ -280,7 +230,7 @@ void union_set(char names[], char result_name) {
     char *token;
     token = strtok(names, ",");
     while (token != NULL) {
-        char set_name = token[1];
+        char set_name = token[3];
         if (set_name >= 'A' && set_name <= 'F') {
             set *set_to_union = sets[set_name - 'A'];
             *result_set |= *set_to_union;
@@ -318,10 +268,10 @@ void intersect_set(char names[], char result_name) {
             return;
     }
 
-    *result_set = sets[names[0] - 'A'][0];
-    char *token = strtok(names + 2, ",");
+    *result_set = sets[names[3] - 'A'][0];
+    char *token = strtok(names + 5, ",");
     while (token != NULL) {
-        char set_name = token[1];
+        char set_name = token[3];
         if (set_name >= 'A' && set_name <= 'F') {
             *result_set &= sets[set_name - 'A'][0];
         }
@@ -358,10 +308,10 @@ void sub_set(char names[], char result_name) {
             return;
     }
 
-    *result_set = sets[names[0] - 'A'][0];
-    char *token = strtok(names + 2, ",");
+    *result_set = sets[names[3] - 'A'][0];
+    char *token = strtok(names + 5, ",");
     while (token != NULL) {
-        char set_name = token[1];
+        char set_name = token[3];
         if (set_name >= 'A' && set_name <= 'F') {
             *result_set &= ~sets[set_name - 'A'][0];
         }
@@ -398,10 +348,10 @@ void symdiff_set(char names[], char result_name) {
             return;
     }
 
-    *result_set = sets[names[0] - 'A'][0];
-    char *token = strtok(names + 2, ",");
+    *result_set = sets[names[3] - 'A'][0];
+    char *token = strtok(names + 5, ",");
     while (token != NULL) {
-        char set_name = token[1];
+        char set_name = token[3];
         if (set_name >= 'A' && set_name <= 'F') {
             *result_set ^= sets[set_name - 'A'][0];
         }
