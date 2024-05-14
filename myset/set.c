@@ -26,6 +26,7 @@ void symdiff_set(char names[], char result_name);
 int main() { /* test commit */
     char command[MAX_LINE_LENGTH];
     while (true) {
+        printf("Please enter a command:\n");
         fgets(command, MAX_LINE_LENGTH, stdin);
 
         /* Remove leading and trailing whitespace */
@@ -40,10 +41,6 @@ int main() { /* test commit */
         }
 
         if (strcmp(operation, "stop") == 0) {
-            if (sscanf(trimmed_command, "%*s %c", &extra) != EOF) {
-                printf("Extraneous text after end of command\n");
-                continue;
-            }
             break; /* stop the program */
         }
         else if (strcmp(operation, "read_set") == 0) {
