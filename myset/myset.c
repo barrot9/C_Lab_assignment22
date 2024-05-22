@@ -77,7 +77,7 @@ Set* getSetByName(char* name) {
     return NULL;
 }
 
-// Function to read and set bits in a set
+
 // Function to read and set bits in a set
 void read_set(char* args[]) {
     Set* set = getSetByName(args[0]);
@@ -94,6 +94,11 @@ void read_set(char* args[]) {
             printf("Error: Empty argument\n");
             return;
         }
+        // Check for missing comma
+        if (i == 1 && args[i][strlen(args[i]) - 1] != ',') {
+            printf("Error: Missing comma after set name\n");
+            return;
+        }
         // Convert argument to integer
         bit = atoi(args[i]);
         // Check for extra comma
@@ -103,12 +108,12 @@ void read_set(char* args[]) {
         }
         // Check for valid integer and within range
         if (bit == 0 && args[i][0] != '0') {
-            printf("Invalid bit value: %s\n", args[i]); // add not an integer.
+            printf("Invalid bit value: %s\n", args[i]);
             return;
         }
         if (bit == -1) break;  // End of input
         if (bit < 0 || bit > 127) {
-            printf("Invalid bit value: %d\n", bit); // add out of range.
+            printf("Invalid bit value: %d\n", bit);
             return;
         }
         turnOn(*set, bit);
@@ -120,6 +125,7 @@ void read_set(char* args[]) {
         return;
     }
 }
+
 
 
 // Command function prototypes
@@ -206,4 +212,44 @@ void cmd_symdiff(char* args[]) {
     else printf("Invalid set names\n");
 }
 
-// Function to parse user input and call the appropriate command
+int main() {
+    // Initialize sets to 0
+    memset(SETA, 0, sizeof(Set));
+    memset(SETB, 0, sizeof(Set));
+    memset(SETC, 0, sizeof(Set));
+    memset(SETD, 0, sizeof(Set));
+    memset(SETE, 0, sizeof(Set));
+    memset(SETF, 0, sizeof(Set));
+
+    // Test cases for read_set function
+    char* test_cases[] = {
+        "read_set SETA 3, 4, 5, 76, 1, -1",  // Normal case
+        "read_set SETB 128, -1",              // Out of range bit value
+        "read_set SETC 3, 4,, 5, 76, 1, -1",  // Extra comma
+        "read_set SETD 3.14, -1",              // Non-integer bit value
+        "read_set SETE 3, abc, 5, 76, 1, -1", // Invalid bit value
+        "read_set SETF, -1",                   // Missing bit values
+        NULL
+    };
+
+    // Test read_set with test cases
+    printf("Testing read_set function:\n");
+    for (int i = 0; test_cases[i] != NULL; i++) {
+        printf("Test case %d: %s\n", i + 1, test_cases[i]);
+        parseAndExecuteCommand(test_cases[i]);
+        printf("\n");
+    }
+
+    // Test other commands
+    printf("Testing other commands:\n");
+    parseAndExecuteCommand("printSet SETA");
+    parseAndExecuteCommand("printSet SETB");
+    parseAndExecuteCommand("printSet SETC");
+    parseAndExecuteCommand("printSet SETD");
+    parseAndExecuteCommand("printSet SETE");
+    parseAndExecuteCommand("printSet SETF");
+
+    return 0;
+}
+
+
