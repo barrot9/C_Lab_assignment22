@@ -1,364 +1,150 @@
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 
-/* Define the type for set */
-typedef unsigned long long int set;
+// Define a new type for a set
+typedef char Set[16];
 
-/* Constants */
-#define MAX_SETS 6
-#define MAX_LINE_LENGTH 100
+// Define the six sets
+Set SETA, SETB, SETC, SETD, SETE, SETF;
 
-/* Define sets */
-set SETA = 0, SETB = 0, SETC = 0, SETD = 0, SETE = 0, SETF = 0;
-set *sets[MAX_SETS] = {&SETA, &SETB, &SETC, &SETD, &SETE, &SETF};
-
-/* Function prototypes */
-void read_set(char name[], char numbers[]);
-void print_set(char name);
-void union_set(char names[], char result_name);
-void intersect_set(char names[], char result_name);
-void sub_set(char names[], char result_name);
-void symdiff_set(char names[], char result_name);
-
-int main() {
-    char command[MAX_LINE_LENGTH];
-    while (true) {
-        printf("Please enter a command:\n");
-        fgets(command, MAX_LINE_LENGTH, stdin);
-
-        /* Remove leading and trailing whitespace */
-        char trimmed_command[MAX_LINE_LENGTH];
-        sscanf(command, " %[^\n]s", trimmed_command);
-
-        /* Parse command */
-        char operation[20], set_names[MAX_LINE_LENGTH], result_set, extra;
-        char numbers[MAX_LINE_LENGTH];
-        if (sscanf(trimmed_command, "%s", operation) == EOF) {
-            continue;
-        }
-
-        if (strcmp(operation, "stop") == 0) {
-            break;
-        }
-        else if (strcmp(operation, "read_set") == 0) {
-            if (sscanf(trimmed_command, "%*s %s %[^\n]", set_names, numbers) != 2 || strncmp(set_names, "SET", 3) != 0 || strlen(set_names) != 4) {
-                printf("undefined set name\n");
-                continue;
-            }
-            if (sscanf(trimmed_command, "%*s %s %c", set_names, &extra) != EOF) {
-                printf("Extraneous text after end of command\n");
-                continue;
-            }
-            read_set(set_names, numbers);
-        }
-        else if (strcmp(operation, "print_set") == 0) {
-            if (sscanf(trimmed_command, "%*s %c", &result_set) != 1 || strncmp(&result_set, "SET", 3) != 0 || strlen(&result_set) != 4) {
-                printf("undefined set name\n");
-                continue;
-            }
-            if (sscanf(trimmed_command, "%*s %c %c", &result_set, &extra) != EOF) {
-                printf("Extraneous text after end of command\n");
-                continue;
-            }
-            print_set(result_set);
-        }
-        else if (strcmp(operation, "union_set") == 0) {
-            if (sscanf(trimmed_command, "%*s %s %c", set_names, &result_set) != 2 || strncmp(set_names, "SET", 3) != 0 || strlen(set_names) != 4) {
-                printf("undefined set name\n");
-                continue;
-            }
-            if (sscanf(trimmed_command, "%*s %s %c %c", set_names, &result_set, &extra) != EOF) {
-                printf("Extraneous text after end of command\n");
-                continue;
-            }
-            union_set(set_names, result_set);
-        }
-        else if (strcmp(operation, "intersect_set") == 0) {
-            if (sscanf(trimmed_command, "%*s %s %c", set_names, &result_set) != 2 || strncmp(set_names, "SET", 3) != 0 || strlen(set_names) != 4) {
-                printf("undefined set name\n");
-                continue;
-            }
-            if (sscanf(trimmed_command, "%*s %s %c %c", set_names, &result_set, &extra) != EOF) {
-                printf("Extraneous text after end of command\n");
-                continue;
-            }
-            intersect_set(set_names, result_set);
-        }
-        else if (strcmp(operation, "sub_set") == 0) {
-            if (sscanf(trimmed_command, "%*s %s %c", set_names, &result_set) != 2 || strncmp(set_names, "SET", 3) != 0 || strlen(set_names) != 4) {
-                printf("undefined set name\n");
-                continue;
-            }
-            if (sscanf(trimmed_command, "%*s %s %c %c", set_names, &result_set, &extra) != EOF) {
-                printf("Extraneous text after end of command\n");
-                continue;
-            }
-            sub_set(set_names, result_set);
-        }
-        else if (strcmp(operation, "symdiff_set") == 0) {
-            if (sscanf(trimmed_command, "%*s %s %c", set_names, &result_set) != 2 || strncmp(set_names, "SET", 3) != 0 || strlen(set_names) != 4) {
-                printf("undefined set name\n");
-                continue;
-            }
-            if (sscanf(trimmed_command, "%*s %s %c %c", set_names, &result_set, &extra) != EOF) {
-                printf("Extraneous text after end of command\n");
-                continue;
-            }
-            symdiff_set(set_names, result_set);
-        }
-        else {
-            printf("undefined command\n");
-        }
-    }
-    return 0;
+// Function to turn on a bit in a given set
+void turnOn(Set set, int bit) {
+    set[bit / 8] |= (1 << (bit % 8));
 }
 
-void read_set(char name[], char numbers[]) {
-    set *target_set;
-    switch (name[3]) {
-        case 'A':
-            target_set = &SETA;
-            break;
-        case 'B':
-            target_set = &SETB;
-            break;
-        case 'C':
-            target_set = &SETC;
-            break;
-        case 'D':
-            target_set = &SETD;
-            break;
-        case 'E':
-            target_set = &SETE;
-            break;
-        case 'F':
-            target_set = &SETF;
-            break;
-        default:
-            return;
-    }
-
-    *target_set = 0;
-    char *token = strtok(numbers, ",");
-    while (token != NULL) {
-        double num = strtod(token, NULL);
-        if (num == 0 && token[0] != '0') {
-            printf("invalid set member - not a number\n");
-            return;
-        }
-        if (num != (int)num) {
-            printf("invalid set member - not an integer\n");
-            return;
-        }
-        if (num < 0 || num > 127) {
-            printf("invalid set member - value out of range\n");
-            return;
-        }
-        *target_set |= 1ull << (int)num;
-        token = strtok(NULL, ",");
-    }
+// Function to turn off a bit in a given set
+void turnOff(Set set, int bit) {
+    set[bit / 8] &= ~(1 << (bit % 8));
 }
 
-void print_set(char name) {
-    set *target_set;
-    switch (name) {
-        case 'A':
-            target_set = &SETA;
-            break;
-        case 'B':
-            target_set = &SETB;
-            break;
-        case 'C':
-            target_set = &SETC;
-            break;
-        case 'D':
-            target_set = &SETD;
-            break;
-        case 'E':
-            target_set = &SETE;
-            break;
-        case 'F':
-            target_set = &SETF;
-            break;
-        default:
-            return;
-    }
+// Function to check if a bit is on in a given set
+int isOn(Set set, int bit) {
+    return set[bit / 8] & (1 << (bit % 8));
+}
 
-    printf("Set %c:", name);
-    bool empty = true;
+// Function to print the numbers of the bits that are on in a set
+void printSet(Set set) {
+    int first = 1;  // flag to manage comma
     for (int i = 0; i < 128; i++) {
-        if (*target_set & (1ull << i)) {
-            printf(" %d", i);
-            empty = false;
+        if (isOn(set, i)) {
+            if (!first) {
+                printf(", ");
+            }
+            printf("%d", i);
+            first = 0;
         }
-    }
-    if (empty) {
-        printf(" (empty)");
     }
     printf("\n");
 }
 
-void union_set(char names[], char result_name) {
-    set *result_set;
-    switch (result_name) {
-        case 'A':
-            result_set = &SETA;
-            break;
-        case 'B':
-            result_set = &SETB;
-            break;
-        case 'C':
-            result_set = &SETC;
-            break;
-        case 'D':
-            result_set = &SETD;
-            break;
-        case 'E':
-            result_set = &SETE;
-            break;
-        case 'F':
-            result_set = &SETF;
-            break;
-        default:
-            return;
-    }
-
-    *result_set = 0;
-
-    char *token;
-    token = strtok(names, ",");
-    while (token != NULL) {
-        char set_name = token[3];
-        if (set_name >= 'A' && set_name <= 'F') {
-            set *set_to_union = sets[set_name - 'A'];
-            *result_set |= *set_to_union;
-        }
-        else {
-            printf("undefined set name\n");
-            return;
-        }
-        token = strtok(NULL, ",");
+// Function to perform a union of two sets and store the result in a third set
+void unionSets(Set result, Set set1, Set set2) {
+    for (int i = 0; i < 16; i++) {
+        result[i] = set1[i] | set2[i];
     }
 }
 
-void intersect_set(char names[], char result_name) {
-    set *result_set;
-    switch (result_name) {
-        case 'A':
-            result_set = &SETA;
-            break;
-        case 'B':
-            result_set = &SETB;
-            break;
-        case 'C':
-            result_set = &SETC;
-            break;
-        case 'D':
-            result_set = &SETD;
-            break;
-        case 'E':
-            result_set = &SETE;
-            break;
-        case 'F':
-            result_set = &SETF;
-            break;
-        default:
-            return;
-    }
-
-    *result_set = sets[names[3] - 'A'][0];
-    char *token = strtok(names + 5, ",");
-    while (token != NULL) {
-        char set_name = token[3];
-        if (set_name >= 'A' && set_name <= 'F') {
-            *result_set &= sets[set_name - 'A'][0];
-        }
-        else {
-            printf("undefined set name\n");
-            return;
-        }
-        token = strtok(NULL, ",");
+// Function to perform an intersection of two sets and store the result in a third set
+void intersectSets(Set result, Set set1, Set set2) {
+    for (int i = 0; i < 16; i++) {
+        result[i] = set1[i] & set2[i];
     }
 }
 
-void sub_set(char names[], char result_name) {
-    set *result_set;
-    switch (result_name) {
-        case 'A':
-            result_set = &SETA;
-            break;
-        case 'B':
-            result_set = &SETB;
-            break;
-        case 'C':
-            result_set = &SETC;
-            break;
-        case 'D':
-            result_set = &SETD;
-            break;
-        case 'E':
-            result_set = &SETE;
-            break;
-        case 'F':
-            result_set = &SETF;
-            break;
-        default:
-            return;
-    }
-
-    *result_set = sets[names[3] - 'A'][0];
-    char *token = strtok(names + 5, ",");
-    while (token != NULL) {
-        char set_name = token[3];
-        if (set_name >= 'A' && set_name <= 'F') {
-            *result_set &= ~sets[set_name - 'A'][0];
-        }
-        else {
-            printf("undefined set name\n");
-            return;
-        }
-        token = strtok(NULL, ",");
+// Function to subtract set2 from set1 and store the result in a third set
+void subtractSets(Set result, Set set1, Set set2) {
+    for (int i = 0; i < 16; i++) {
+        result[i] = set1[i] & ~set2[i];
     }
 }
 
-void symdiff_set(char names[], char result_name) {
-    set *result_set;
-    switch (result_name) {
-        case 'A':
-            result_set = &SETA;
+// Function to perform a symmetric difference of two sets and store the result in a third set
+void symDifferenceSets(Set result, Set set1, Set set2) {
+    for (int i = 0; i < 16; i++) {
+        result[i] = set1[i] ^ set2[i];
+    }
+}
+
+// Function to get a set by its name
+Set* getSetByName(char* name) {
+    if (strcmp(name, "SETA") == 0) return &SETA;
+    if (strcmp(name, "SETB") == 0) return &SETB;
+    if (strcmp(name, "SETC") == 0) return &SETC;
+    if (strcmp(name, "SETD") == 0) return &SETD;
+    if (strcmp(name, "SETE") == 0) return &SETE;
+    if (strcmp(name, "SETF") == 0) return &SETF;
+    return NULL;
+}
+
+int main() {
+    // Initialize sets to 0
+    memset(SETA, 0, sizeof(Set));
+    memset(SETB, 0, sizeof(Set));
+    memset(SETC, 0, sizeof(Set));
+    memset(SETD, 0, sizeof(Set));
+    memset(SETE, 0, sizeof(Set));
+    memset(SETF, 0, sizeof(Set));
+
+    char command[100];
+    char setName1[10], setName2[10], setName3[10];
+    int bit;
+
+    while (1) {
+        printf("Enter command (turnOn, turnOff, printSet, union, intersect, subtract, symdiff, quit): ");
+        scanf("%s", command);
+
+        if (strcmp(command, "turnOn") == 0) {
+            scanf("%s %d", setName1, &bit);
+            Set* set = getSetByName(setName1);
+            if (set) turnOn(*set, bit);
+            else printf("Invalid set name\n");
+        } else if (strcmp(command, "turnOff") == 0) {
+            scanf("%s %d", setName1, &bit);
+            Set* set = getSetByName(setName1);
+            if (set) turnOff(*set, bit);
+            else printf("Invalid set name\n");
+        } else if (strcmp(command, "printSet") == 0) {
+            scanf("%s", setName1);
+            Set* set = getSetByName(setName1);
+            if (set) {
+                printf("%s: ", setName1);
+                printSet(*set);
+            } else printf("Invalid set name\n");
+        } else if (strcmp(command, "union") == 0) {
+            scanf("%s %s %s", setName1, setName2, setName3);
+            Set* set1 = getSetByName(setName1);
+            Set* set2 = getSetByName(setName2);
+            Set* result = getSetByName(setName3);
+            if (set1 && set2 && result) unionSets(*result, *set1, *set2);
+            else printf("Invalid set names\n");
+        } else if (strcmp(command, "intersect") == 0) {
+            scanf("%s %s %s", setName1, setName2, setName3);
+            Set* set1 = getSetByName(setName1);
+            Set* set2 = getSetByName(setName2);
+            Set* result = getSetByName(setName3);
+            if (set1 && set2 && result) intersectSets(*result, *set1, *set2);
+            else printf("Invalid set names\n");
+        } else if (strcmp(command, "subtract") == 0) {
+            scanf("%s %s %s", setName1, setName2, setName3);
+            Set* set1 = getSetByName(setName1);
+            Set* set2 = getSetByName(setName2);
+            Set* result = getSetByName(setName3);
+            if (set1 && set2 && result) subtractSets(*result, *set1, *set2);
+            else printf("Invalid set names\n");
+        } else if (strcmp(command, "symdiff") == 0) {
+            scanf("%s %s %s", setName1, setName2, setName3);
+            Set* set1 = getSetByName(setName1);
+            Set* set2 = getSetByName(setName2);
+            Set* result = getSetByName(setName3);
+            if (set1 && set2 && result) symDifferenceSets(*result, *set1, *set2);
+            else printf("Invalid set names\n");
+        } else if (strcmp(command, "quit") == 0) {
             break;
-        case 'B':
-            result_set = &SETB;
-            break;
-        case 'C':
-            result_set = &SETC;
-            break;
-        case 'D':
-            result_set = &SETD;
-            break;
-        case 'E':
-            result_set = &SETE;
-            break;
-        case 'F':
-            result_set = &SETF;
-            break;
-        default:
-            return;
+        } else {
+            printf("Invalid command\n");
+        }
     }
 
-    *result_set = sets[names[3] - 'A'][0];
-    char *token = strtok(names + 5, ",");
-    while (token != NULL) {
-        char set_name = token[3];
-        if (set_name >= 'A' && set_name <= 'F') {
-            *result_set ^= sets[set_name - 'A'][0];
-        }
-        else {
-            printf("undefined set name\n");
-            return;
-        }
-        token = strtok(NULL, ",");
-    }
+    return 0;
 }
