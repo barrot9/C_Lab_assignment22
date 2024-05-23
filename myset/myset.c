@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 // Define a new type for a set
 typedef char Set[16];
@@ -77,10 +78,27 @@ Set* getSetByName(char* name) {
     return NULL;
 }
 
+// Function to trim leading and trailing whitespace
+char* trimWhitespace(char* str) {
+    // Trim leading whitespace
+    while (isspace((unsigned char) *str)) str++;
+
+    if (*str == 0)  // All spaces?
+        return str;
+
+    // Trim trailing whitespace
+    char* end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char) *end)) end--;
+
+    // Write new null terminator character
+    end[1] = '\0';
+
+    return str;
+}
 
 // Function to read and set bits in a set
 void read_set(char* args[]) {
-    Set* set = getSetByName(args[0]);
+    Set* set = getSetByName(trimWhitespace(args[0]));
     if (set == NULL) {
         printf("Invalid set name\n");
         return;
@@ -89,26 +107,17 @@ void read_set(char* args[]) {
     int bit;
     int num_args = 0; // Track number of arguments processed
     for (int i = 1; args[i] != NULL; i++) {
+        char* trimmedArg = trimWhitespace(args[i]);
         // Check for empty argument
-        if (strlen(args[i]) == 0) {
+        if (strlen(trimmedArg) == 0) {
             printf("Error: Empty argument\n");
             return;
         }
-        // Check for missing comma
-        if (i == 1 && args[i][strlen(args[i]) - 1] != ',') {
-            printf("Error: Missing comma after set name\n");
-            return;
-        }
         // Convert argument to integer
-        bit = atoi(args[i]);
-        // Check for extra comma
-        if (args[i][0] == ',' && (args[i - 1] == NULL || args[i + 1] == NULL || strlen(args[i + 1]) == 0)) {
-            printf("Error: Extra comma\n");
-            return;
-        }
+        bit = atoi(trimmedArg);
         // Check for valid integer and within range
-        if (bit == 0 && args[i][0] != '0') {
-            printf("Invalid bit value: %s\n", args[i]);
+        if (bit == 0 && trimmedArg[0] != '0') {
+            printf("Invalid bit value: %s\n", trimmedArg);
             return;
         }
         if (bit == -1) break;  // End of input
@@ -126,8 +135,6 @@ void read_set(char* args[]) {
     }
 }
 
-
-
 // Command function prototypes
 typedef void (*CommandFunc)(char* args[]);
 
@@ -138,6 +145,7 @@ void cmd_union(char* args[]);
 void cmd_intersect(char* args[]);
 void cmd_subtract(char* args[]);
 void cmd_symdiff(char* args[]);
+void cmd_exit(char* args[]);
 
 // Command structure
 typedef struct {
@@ -154,62 +162,110 @@ Command commands[] = {
     {"subtract", cmd_subtract},
     {"symdiff", cmd_symdiff},
     {"read_set", read_set},
+    {"exit", cmd_exit},
     {NULL, NULL}  // End of commands marker
 };
 
+int running = 1;  // Global variable to control the loop
+
 // Command function implementations
 void cmd_turnOn(char* args[]) {
-    Set* set = getSetByName(args[0]);
-    int bit = atoi(args[1]);
+    Set* set = getSetByName(trimWhitespace(args[0]));
+    int bit = atoi(trimWhitespace(args[1]));
     if (set) turnOn(*set, bit);
     else printf("Invalid set name\n");
 }
 
 void cmd_turnOff(char* args[]) {
-    Set* set = getSetByName(args[0]);
-    int bit = atoi(args[1]);
+    Set* set = getSetByName(trimWhitespace(args[0]));
+    int bit = atoi(trimWhitespace(args[1]));
     if (set) turnOff(*set, bit);
     else printf("Invalid set name\n");
 }
 
 void cmd_printSet(char* args[]) {
-    Set* set = getSetByName(args[0]);
+    Set* set = getSetByName(trimWhitespace(args[0]));
     if (set) {
-        printf("%s: ", args[0]);
+        printf("%s: ", trimWhitespace(args[0]));
         printSet(*set);
     } else printf("Invalid set name\n");
 }
 
 void cmd_union(char* args[]) {
-    Set* set1 = getSetByName(args[0]);
-    Set* set2 = getSetByName(args[1]);
-    Set* result = getSetByName(args[2]);
+    Set* set1 = getSetByName(trimWhitespace(args[0]));
+    Set* set2 = getSetByName(trimWhitespace(args[1]));
+    Set* result = getSetByName(trimWhitespace(args[2]));
     if (set1 && set2 && result) unionSets(*result, *set1, *set2);
     else printf("Invalid set names\n");
 }
 
 void cmd_intersect(char* args[]) {
-    Set* set1 = getSetByName(args[0]);
-    Set* set2 = getSetByName(args[1]);
-    Set* result = getSetByName(args[2]);
+    Set* set1 = getSetByName(trimWhitespace(args[0]));
+    Set* set2 = getSetByName(trimWhitespace(args[1]));
+    Set* result = getSetByName(trimWhitespace(args[2]));
     if (set1 && set2 && result) intersectSets(*result, *set1, *set2);
     else printf("Invalid set names\n");
 }
 
 void cmd_subtract(char* args[]) {
-    Set* set1 = getSetByName(args[0]);
-    Set* set2 = getSetByName(args[1]);
-    Set* result = getSetByName(args[2]);
+    Set* set1 = getSetByName(trimWhitespace(args[0]));
+    Set* set2 = getSetByName(trimWhitespace(args[1]));
+    Set* result = getSetByName(trimWhitespace(args[2]));
     if (set1 && set2 && result) subtractSets(*result, *set1, *set2);
     else printf("Invalid set names\n");
 }
 
 void cmd_symdiff(char* args[]) {
-    Set* set1 = getSetByName(args[0]);
-    Set* set2 = getSetByName(args[1]);
-    Set* result = getSetByName(args[2]);
+    Set* set1 = getSetByName(trimWhitespace(args[0]));
+    Set* set2 = getSetByName(trimWhitespace(args[1]));
+    Set* result = getSetByName(trimWhitespace(args[2]));
     if (set1 && set2 && result) symDifferenceSets(*result, *set1, *set2);
     else printf("Invalid set names\n");
+}
+
+void cmd_exit(char* args[]) {
+    running = 0;  // Set the running flag to 0 to exit the loop
+}
+
+// Function to parse user input and call the appropriate command
+void parseAndExecuteCommand(char* input) {
+    // Split input into command and arguments
+    char* tokens[256];
+    int num_tokens = 0;
+
+    // Handle commands with comma after set name
+    char* command = strtok(input, " ");
+    tokens[num_tokens++] = command;
+
+    char* set_and_values = strtok(NULL, "\n");
+    if (set_and_values != NULL) {
+        char* set_name = strtok(set_and_values, ",");
+        if (set_name != NULL) {
+            tokens[num_tokens++] = set_name;
+
+            char* value = strtok(NULL, ",");
+            while (value != NULL) {
+                tokens[num_tokens++] = value;
+                value = strtok(NULL, ",");
+            }
+        }
+    }
+    tokens[num_tokens] = NULL; // Null-terminate the tokens array
+
+    if (num_tokens == 0) {
+        printf("No command provided\n");
+        return;
+    }
+
+    // Find and execute the command
+    for (int i = 0; commands[i].name != NULL; i++) {
+        if (strcmp(tokens[0], commands[i].name) == 0) {
+            commands[i].func(tokens + 1); // Pass the arguments to the command function
+            return;
+        }
+    }
+
+    printf("Unknown command: %s\n", tokens[0]);
 }
 
 int main() {
@@ -221,35 +277,16 @@ int main() {
     memset(SETE, 0, sizeof(Set));
     memset(SETF, 0, sizeof(Set));
 
-    // Test cases for read_set function
-    char* test_cases[] = {
-        "read_set SETA 3, 4, 5, 76, 1, -1",  // Normal case
-        "read_set SETB 128, -1",              // Out of range bit value
-        "read_set SETC 3, 4,, 5, 76, 1, -1",  // Extra comma
-        "read_set SETD 3.14, -1",              // Non-integer bit value
-        "read_set SETE 3, abc, 5, 76, 1, -1", // Invalid bit value
-        "read_set SETF, -1",                   // Missing bit values
-        NULL
-    };
-
-    // Test read_set with test cases
-    printf("Testing read_set function:\n");
-    for (int i = 0; test_cases[i] != NULL; i++) {
-        printf("Test case %d: %s\n", i + 1, test_cases[i]);
-        parseAndExecuteCommand(test_cases[i]);
-        printf("\n");
+    // Read commands from the user in a loop
+    char input[256];
+    while (running) {
+        printf("> ");
+        if (fgets(input, sizeof(input), stdin) != NULL) {
+            // Remove the newline character at the end if present
+            input[strcspn(input, "\n")] = '\0';
+            parseAndExecuteCommand(input);
+        }
     }
-
-    // Test other commands
-    printf("Testing other commands:\n");
-    parseAndExecuteCommand("printSet SETA");
-    parseAndExecuteCommand("printSet SETB");
-    parseAndExecuteCommand("printSet SETC");
-    parseAndExecuteCommand("printSet SETD");
-    parseAndExecuteCommand("printSet SETE");
-    parseAndExecuteCommand("printSet SETF");
 
     return 0;
 }
-
-
