@@ -244,16 +244,25 @@ void parseAndExecuteCommand(char* input) {
     char* tokens[20];
     int num_tokens = 0;
 
-    // Trim leading and trailing whitespace from the input
+    // Trim leading and trailing whitespace from input
     input = trimWhitespace(input);
 
+    // Split input into command and arguments
     char* cmd = strtok(input, " ");
     if (cmd != NULL) {
         tokens[num_tokens++] = cmd;
-        char* token = strtok(NULL, ",");
-        while (token != NULL) {
-            tokens[num_tokens++] = token;
-            token = strtok(NULL, ",");
+        if (strcmp(cmd, "read_set") == 0) {
+            char* token = strtok(NULL, ",");
+            while (token != NULL) {
+                tokens[num_tokens++] = token;
+                token = strtok(NULL, ",");
+            }
+        } else {
+            char* token = strtok(NULL, " ");
+            while (token != NULL) {
+                tokens[num_tokens++] = token;
+                token = strtok(NULL, " ");
+            }
         }
     }
     tokens[num_tokens] = NULL;  // Null-terminate the tokens array
@@ -266,7 +275,7 @@ void parseAndExecuteCommand(char* input) {
     // Find and execute the command
     for (int i = 0; commands[i].name != NULL; i++) {
         if (strcmp(tokens[0], commands[i].name) == 0) {
-            // Ensure no extra text after the command
+            // Ensure no extra text after the command for printSet
             if (strcmp(tokens[0], "printSet") == 0 && tokens[2] != NULL) {
                 printf("Error: Extra text after end of command\n");
                 return;
