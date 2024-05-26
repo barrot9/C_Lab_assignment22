@@ -111,7 +111,7 @@ void read_set(char* args[]) {
         char* trimmedArg = trimWhitespace(args[i]);
         // Check for empty argument
         if (strlen(trimmedArg) == 0) {
-            printf("Error: Extra comma\n");
+            printf("Error: Empty argument\n");
             return;
         }
         // Convert argument to integer
@@ -194,7 +194,7 @@ void cmd_turnOff(char* args[]) {
 void cmd_printSet(char* args[]) {
     Set* set = getSetByName(trimWhitespace(args[0]));
     if (set) {
-        if (args[1] != NULL) {
+        if (args[1] != NULL && strlen(trimWhitespace(args[1])) > 0) {
             printf("Error: Extra text after end of command\n");
         } else {
             printf("%s: ", trimWhitespace(args[0]));
@@ -244,28 +244,22 @@ void parseAndExecuteCommand(char* input) {
     char* tokens[20];
     int num_tokens = 0;
 
-    // Trim leading and trailing whitespace from input
-    input = trimWhitespace(input);
-
-    // Split input into command and arguments
-    char* cmd = strtok(input, " ");
+    char* cmd = strtok(input, " ,");
     if (cmd != NULL) {
         tokens[num_tokens++] = cmd;
-        if (strcmp(cmd, "read_set") == 0) {
-            char* token = strtok(NULL, ",");
-            while (token != NULL) {
-                tokens[num_tokens++] = token;
-                token = strtok(NULL, ",");
-            }
-        } else {
-            char* token = strtok(NULL, " ");
-            while (token != NULL) {
-                tokens[num_tokens++] = token;
-                token = strtok(NULL, " ");
+        char* set_name = strtok(NULL, " ,");
+
+        if (set_name != NULL) {
+            tokens[num_tokens++] = set_name;
+
+            char* value = strtok(NULL, ",");
+            while (value != NULL) {
+                tokens[num_tokens++] = value;
+                value = strtok(NULL, ",");
             }
         }
     }
-    tokens[num_tokens] = NULL;  // Null-terminate the tokens array
+    tokens[num_tokens] = NULL; // Null-terminate the tokens array
 
     if (num_tokens == 0) {
         printf("No command provided\n");
@@ -275,12 +269,7 @@ void parseAndExecuteCommand(char* input) {
     // Find and execute the command
     for (int i = 0; commands[i].name != NULL; i++) {
         if (strcmp(tokens[0], commands[i].name) == 0) {
-            // Ensure no extra text after the command for printSet
-            if (strcmp(tokens[0], "printSet") == 0 && tokens[2] != NULL) {
-                printf("Error: Extra text after end of command\n");
-                return;
-            }
-            commands[i].func(tokens + 1);  // Pass the arguments to the command function
+            commands[i].func(tokens + 1); // Pass the arguments to the command function
             return;
         }
     }
