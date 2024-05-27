@@ -123,10 +123,17 @@ void read_set(char* args[]) {
         }
         if (bit == -1) {
             end_with_minus_one = 1;
+            // Check for any non-whitespace characters after -1
+            for (int j = i + 1; args[j] != NULL; j++) {
+                if (strlen(trimWhitespace(args[j])) != 0) {
+                    printf("Error: Extra text after ending value -1\n");
+                    return;
+                }
+            }
             break;  // End of input
         }
         if (bit < 0 || bit > 127) {
-            printf("Invalid bit value: %d\n", bit);
+            printf("bit value out of range: %d\n", bit);
             return;
         }
         turnOn(*set, bit);
@@ -244,20 +251,10 @@ void parseAndExecuteCommand(char* input) {
     char* tokens[20];
     int num_tokens = 0;
 
-    char* cmd = strtok(input, " ,");
-    if (cmd != NULL) {
-        tokens[num_tokens++] = cmd;
-        char* set_name = strtok(NULL, " ,");
-
-        if (set_name != NULL) {
-            tokens[num_tokens++] = set_name;
-
-            char* value = strtok(NULL, ",");
-            while (value != NULL) {
-                tokens[num_tokens++] = value;
-                value = strtok(NULL, ",");
-            }
-        }
+    char* token = strtok(input, " ,");
+    while (token != NULL && num_tokens < 20) {
+        tokens[num_tokens++] = token;
+        token = strtok(NULL, " ,");
     }
     tokens[num_tokens] = NULL; // Null-terminate the tokens array
 
