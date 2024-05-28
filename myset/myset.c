@@ -100,7 +100,7 @@ char* trimWhitespace(char* str) {
 void read_set(char* args[]) {
     Set* set = getSetByName(trimWhitespace(args[0]));
     if (set == NULL) {
-        printf("Invalid set name\n");
+        printf("Undefined set name\n");
         return;
     }
 
@@ -115,10 +115,11 @@ void read_set(char* args[]) {
             return;
         }
         // Convert argument to integer
-        bit = atoi(trimmedArg);
+        char *endptr;
+        bit = strtol(trimmedArg, &endptr, 10);
         // Check for valid integer and within range
-        if (bit == 0 && trimmedArg[0] != '0') {
-            printf("Invalid bit value: %s\n", trimmedArg);
+        if (*endptr != '\0' || endptr == trimmedArg) {
+            printf("Invalid set member %s - not an integer\n", trimmedArg);
             return;
         }
         if (bit == -1) {
@@ -133,7 +134,7 @@ void read_set(char* args[]) {
             break;  // End of input
         }
         if (bit < 0 || bit > 127) {
-            printf("bit value out of range: %d\n", bit);
+            printf("Invalid set member %d - value is out of range\n", bit);
             return;
         }
         turnOn(*set, bit);
@@ -145,7 +146,7 @@ void read_set(char* args[]) {
         return;
     }
     if (!end_with_minus_one) {
-        printf("Missing -1 value\n");
+        printf("List of set members is not terminated correctly (missing -1 value)\n");
         return;
     }
 }
@@ -186,16 +187,16 @@ int running = 1;  // Global variable to control the loop
 // Command function implementations
 void cmd_turnOn(char* args[]) {
     Set* set = getSetByName(trimWhitespace(args[0]));
-    int bit = atoi(trimWhitespace(args[1]));
+    int bit = strtol(trimWhitespace(args[1]), NULL, 10);
     if (set) turnOn(*set, bit);
-    else printf("Invalid set name\n");
+    else printf("Undefined set name\n");
 }
 
 void cmd_turnOff(char* args[]) {
     Set* set = getSetByName(trimWhitespace(args[0]));
-    int bit = atoi(trimWhitespace(args[1]));
+    int bit = strtol(trimWhitespace(args[1]), NULL, 10);
     if (set) turnOff(*set, bit);
-    else printf("Invalid set name\n");
+    else printf("Undefined set name\n");
 }
 
 void cmd_printSet(char* args[]) {
@@ -207,7 +208,7 @@ void cmd_printSet(char* args[]) {
             printf("%s: ", trimWhitespace(args[0]));
             printSet(*set);
         }
-    } else printf("Invalid set name\n");
+    } else printf("Undefined set name\n");
 }
 
 void cmd_union(char* args[]) {
@@ -215,7 +216,7 @@ void cmd_union(char* args[]) {
     Set* set2 = getSetByName(trimWhitespace(args[1]));
     Set* result = getSetByName(trimWhitespace(args[2]));
     if (set1 && set2 && result) unionSets(*result, *set1, *set2);
-    else printf("Invalid set names\n");
+    else printf("Undefined set names\n");
 }
 
 void cmd_intersect(char* args[]) {
@@ -223,7 +224,7 @@ void cmd_intersect(char* args[]) {
     Set* set2 = getSetByName(trimWhitespace(args[1]));
     Set* result = getSetByName(trimWhitespace(args[2]));
     if (set1 && set2 && result) intersectSets(*result, *set1, *set2);
-    else printf("Invalid set names\n");
+    else printf("Undefined set names\n");
 }
 
 void cmd_subtract(char* args[]) {
@@ -231,7 +232,7 @@ void cmd_subtract(char* args[]) {
     Set* set2 = getSetByName(trimWhitespace(args[1]));
     Set* result = getSetByName(trimWhitespace(args[2]));
     if (set1 && set2 && result) subtractSets(*result, *set1, *set2);
-    else printf("Invalid set names\n");
+    else printf("Undefined set names\n");
 }
 
 void cmd_symdiff(char* args[]) {
@@ -239,7 +240,7 @@ void cmd_symdiff(char* args[]) {
     Set* set2 = getSetByName(trimWhitespace(args[1]));
     Set* result = getSetByName(trimWhitespace(args[2]));
     if (set1 && set2 && result) symDifferenceSets(*result, *set1, *set2);
-    else printf("Invalid set names\n");
+    else printf("Undefined set names\n");
 }
 
 void cmd_exit(char* args[]) {
@@ -271,7 +272,7 @@ void parseAndExecuteCommand(char* input) {
         }
     }
 
-    printf("Unknown command: %s\n", tokens[0]);
+    printf("Undefined command name: %s\n", tokens[0]);
 }
 
 int main() {
