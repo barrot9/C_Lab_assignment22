@@ -57,7 +57,7 @@ void intersect_set(Set result, Set set1, Set set2) {
 }
 
 /* Function to subtract set2 from set1 and store the result in a third set */
-void subtract_set(Set result, Set set1, Set set2) {
+void sub_set(Set result, Set set1, Set set2) {
     int i;
     for (i = 0; i < 16; i++) {
         result[i] = set1[i] & ~set2[i];
@@ -170,7 +170,7 @@ void cmd_turnOff(char* args[]);
 void cmd_print_set(char* args[]);
 void cmd_union_set(char* args[]);
 void cmd_intersect_set(char* args[]);
-void cmd_subtract_set(char* args[]);
+void cmd_sub_set(char* args[]);
 void cmd_symdiff_set(char* args[]);
 void cmd_stop(char* args[]);
 
@@ -186,7 +186,7 @@ Command commands[] = {
     {"print_set", cmd_print_set},
     {"union_set", cmd_union_set},
     {"intersect_set", cmd_intersect_set},
-    {"subtract_set", cmd_subtract_set},
+    {"sub_set", cmd_sub_set},
     {"symdiff_set", cmd_symdiff_set},
     {"read_set", read_set},
     {"stop", cmd_stop},
@@ -254,7 +254,7 @@ void cmd_intersect_set(char* args[]) {
     else printf("Undefined set names\n");
 }
 
-void cmd_subtract_set(char* args[]) {
+void cmd_sub_set(char* args[]) {
     Set* set1;
     Set* set2;
     Set* result;
@@ -262,7 +262,7 @@ void cmd_subtract_set(char* args[]) {
     set1 = getSetByName(trimWhitespace(args[0]));
     set2 = getSetByName(trimWhitespace(args[1]));
     result = getSetByName(trimWhitespace(args[2]));
-    if (set1 && set2 && result) subtract_set(*result, *set1, *set2);
+    if (set1 && set2 && result) sub_set(*result, *set1, *set2);
     else printf("Undefined set names\n");
 }
 
@@ -324,7 +324,7 @@ int main() {
     /* Read commands from the user in a loop */
     char input[256];
     while (running) {
-        printf("> ");
+        printf("Enter a command > ");
         if (fgets(input, sizeof(input), stdin) != NULL) {
             /* Remove the newline character at the end if present */
             input[strcspn(input, "\n")] = '\0';
