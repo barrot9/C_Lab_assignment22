@@ -25,7 +25,7 @@ int isOn(Set set, int bit) {
 }
 
 // Function to print the numbers of the bits that are on in a set
-void printSet(Set set) {
+void print_set(Set set) {
     int first = 1;  // flag to manage comma
     for (int i = 0; i < 128; i++) {
         if (isOn(set, i)) {
@@ -40,28 +40,28 @@ void printSet(Set set) {
 }
 
 // Function to perform a union of two sets and store the result in a third set
-void unionSets(Set result, Set set1, Set set2) {
+void union_set(Set result, Set set1, Set set2) {
     for (int i = 0; i < 16; i++) {
         result[i] = set1[i] | set2[i];
     }
 }
 
 // Function to perform an intersection of two sets and store the result in a third set
-void intersectSets(Set result, Set set1, Set set2) {
+void intersect_set(Set result, Set set1, Set set2) {
     for (int i = 0; i < 16; i++) {
         result[i] = set1[i] & set2[i];
     }
 }
 
 // Function to subtract set2 from set1 and store the result in a third set
-void subtractSets(Set result, Set set1, Set set2) {
+void subtract_set(Set result, Set set1, Set set2) {
     for (int i = 0; i < 16; i++) {
         result[i] = set1[i] & ~set2[i];
     }
 }
 
 // Function to perform a symmetric difference of two sets and store the result in a third set
-void symDifferenceSets(Set result, Set set1, Set set2) {
+void symdiff_set(Set result, Set set1, Set set2) {
     for (int i = 0; i < 16; i++) {
         result[i] = set1[i] ^ set2[i];
     }
@@ -156,12 +156,12 @@ typedef void (*CommandFunc)(char* args[]);
 
 void cmd_turnOn(char* args[]);
 void cmd_turnOff(char* args[]);
-void cmd_printSet(char* args[]);
-void cmd_union(char* args[]);
-void cmd_intersect(char* args[]);
-void cmd_subtract(char* args[]);
-void cmd_symdiff(char* args[]);
-void cmd_exit(char* args[]);
+void cmd_print_set(char* args[]);
+void cmd_union_set(char* args[]);
+void cmd_intersect_set(char* args[]);
+void cmd_subtract_set(char* args[]);
+void cmd_symdiff_set(char* args[]);
+void cmd_stop(char* args[]);
 
 // Command structure
 typedef struct {
@@ -172,13 +172,13 @@ typedef struct {
 Command commands[] = {
     {"turnOn", cmd_turnOn},
     {"turnOff", cmd_turnOff},
-    {"printSet", cmd_printSet},
-    {"union", cmd_union},
-    {"intersect", cmd_intersect},
-    {"subtract", cmd_subtract},
-    {"symdiff", cmd_symdiff},
+    {"print_set", cmd_print_set},
+    {"union_set", cmd_union_set},
+    {"intersect_set", cmd_intersect_set},
+    {"subtract_set", cmd_subtract_set},
+    {"symdiff_set", cmd_symdiff_set},
     {"read_set", read_set},
-    {"exit", cmd_exit},
+    {"stop", cmd_stop},
     {NULL, NULL}  // End of commands marker
 };
 
@@ -199,52 +199,52 @@ void cmd_turnOff(char* args[]) {
     else printf("Undefined set name\n");
 }
 
-void cmd_printSet(char* args[]) {
+void cmd_print_set(char* args[]) {
     Set* set = getSetByName(trimWhitespace(args[0]));
     if (set) {
         if (args[1] != NULL && strlen(trimWhitespace(args[1])) > 0) {
             printf("Error: Extra text after end of command\n");
         } else {
             printf("%s: ", trimWhitespace(args[0]));
-            printSet(*set);
+            print_set(*set);
         }
     } else printf("Undefined set name\n");
 }
 
-void cmd_union(char* args[]) {
+void cmd_union_set(char* args[]) {
     Set* set1 = getSetByName(trimWhitespace(args[0]));
     Set* set2 = getSetByName(trimWhitespace(args[1]));
     Set* result = getSetByName(trimWhitespace(args[2]));
-    if (set1 && set2 && result) unionSets(*result, *set1, *set2);
+    if (set1 && set2 && result) union_set(*result, *set1, *set2);
     else printf("Undefined set names\n");
 }
 
-void cmd_intersect(char* args[]) {
+void cmd_intersect_set(char* args[]) {
     Set* set1 = getSetByName(trimWhitespace(args[0]));
     Set* set2 = getSetByName(trimWhitespace(args[1]));
     Set* result = getSetByName(trimWhitespace(args[2]));
-    if (set1 && set2 && result) intersectSets(*result, *set1, *set2);
+    if (set1 && set2 && result) intersect_set(*result, *set1, *set2);
     else printf("Undefined set names\n");
 }
 
-void cmd_subtract(char* args[]) {
+void cmd_subtract_set(char* args[]) {
     Set* set1 = getSetByName(trimWhitespace(args[0]));
     Set* set2 = getSetByName(trimWhitespace(args[1]));
     Set* result = getSetByName(trimWhitespace(args[2]));
-    if (set1 && set2 && result) subtractSets(*result, *set1, *set2);
+    if (set1 && set2 && result) subtract_set(*result, *set1, *set2);
     else printf("Undefined set names\n");
 }
 
-void cmd_symdiff(char* args[]) {
+void cmd_symdiff_set(char* args[]) {
     Set* set1 = getSetByName(trimWhitespace(args[0]));
     Set* set2 = getSetByName(trimWhitespace(args[1]));
     Set* result = getSetByName(trimWhitespace(args[2]));
-    if (set1 && set2 && result) symDifferenceSets(*result, *set1, *set2);
+    if (set1 && set2 && result) symdiff_set(*result, *set1, *set2);
     else printf("Undefined set names\n");
 }
 
-void cmd_exit(char* args[]) {
-    running = 0;  // Set the running flag to 0 to exit the loop
+void cmd_stop(char* args[]) {
+    running = 0;  // Set the running flag to 0 to stop the loop
 }
 
 // Function to parse user input and call the appropriate command
