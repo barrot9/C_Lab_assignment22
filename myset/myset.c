@@ -9,19 +9,28 @@ typedef char Set[16];
 /* Define the six sets */
 Set SETA, SETB, SETC, SETD, SETE, SETF;
 
+/* Function prototypes */
+void turnOn(Set set, int bit);
+int isOn(Set set, int bit);
+void print_set(Set set);
+void union_set(Set result, Set set1, Set set2);
+void intersect_set(Set result, Set set1, Set set2);
+void sub_set(Set result, Set set1, Set set2);
+void symdiff_set(Set result, Set set1, Set set2);
+Set* getSetByName(char* name, char** undefinedSet);
+char* trimWhitespace(char* str);
+void read_set(char* args[], int num_args);
+void cmd_print_set(char* args[], int num_args);
+void cmd_union_set(char* args[], int num_args);
+void cmd_intersect_set(char* args[], int num_args);
+void cmd_sub_set(char* args[], int num_args);
+void cmd_symdiff_set(char* args[], int num_args);
+void cmd_stop(char* args[], int num_args);
+void parseAndExecuteCommand(char* input);
+
 /* Function to turn on a bit in a given set */
 void turnOn(Set set, int bit) {
     set[bit / 8] |= (1 << (bit % 8));
-}
-
-/* Function to turn off a bit in a given set */
-void turnOff(Set set, int bit) {
-    set[bit / 8] &= ~(1 << (bit % 8));
-}
-
-/* Function to check if a bit is on in a given set */
-int isOn(Set set, int bit) {
-    return set[bit / 8] & (1 << (bit % 8));
 }
 
 /* Function to print the numbers of the bits that are on in a set */
@@ -38,6 +47,11 @@ void print_set(Set set) {
         }
     }
     printf("\n");
+}
+
+/* Function to check if a bit is on in a given set */
+int isOn(Set set, int bit) {
+    return set[bit / 8] & (1 << (bit % 8));
 }
 
 /* Function to perform a union of two sets and store the result in a third set */
@@ -73,13 +87,14 @@ void symdiff_set(Set result, Set set1, Set set2) {
 }
 
 /* Function to get a set by its name */
-Set* getSetByName(char* name) {
+Set* getSetByName(char* name, char** undefinedSet) {
     if (strcmp(name, "SETA") == 0) return &SETA;
     if (strcmp(name, "SETB") == 0) return &SETB;
     if (strcmp(name, "SETC") == 0) return &SETC;
     if (strcmp(name, "SETD") == 0) return &SETD;
     if (strcmp(name, "SETE") == 0) return &SETE;
     if (strcmp(name, "SETF") == 0) return &SETF;
+    *undefinedSet = name;
     return NULL;
 }
 
@@ -103,22 +118,21 @@ char* trimWhitespace(char* str) {
 }
 
 /* Function to read and set bits in a set */
-void read_set(char* args[]) {
+void read_set(char* args[], int num_args) {
     Set* set;
     int bit;
-    int num_args;
     int end_with_minus_one;
     int i, j;
+    char* undefinedSet = NULL;
 
-    set = getSetByName(trimWhitespace(args[0]));
+    set = getSetByName(trimWhitespace(args[0]), &undefinedSet);
     if (set == NULL) {
-        printf("Undefined set name\n");
+        printf("Undefined set name: %s\n", undefinedSet);
         return;
     }
 
-    num_args = 0;  /* Track number of arguments processed */
     end_with_minus_one = 0;
-    for (i = 1; args[i] != NULL; i++) {
+    for (i = 1; i < num_args; i++) {
         char* trimmedArg = trimWhitespace(args[i]);
         /* Check for empty argument */
         if (strlen(trimmedArg) == 0) {
@@ -136,7 +150,7 @@ void read_set(char* args[]) {
         if (bit == -1) {
             end_with_minus_one = 1;
             /* Check for any non-whitespace characters after -1 */
-            for (j = i + 1; args[j] != NULL; j++) {
+            for (j = i + 1; j < num_args; j++) {
                 if (strlen(trimWhitespace(args[j])) != 0) {
                     printf("Error: Extra text after ending value -1\n");
                     return;
@@ -149,12 +163,6 @@ void read_set(char* args[]) {
             return;
         }
         turnOn(*set, bit);
-        num_args++;
-    }
-    /* Check for missing arguments */
-    if (num_args == 0) {
-        printf("Error: No bit values provided\n");
-        return;
     }
     if (!end_with_minus_one) {
         printf("List of set members is not terminated correctly (missing -1 value)\n");
@@ -163,122 +171,151 @@ void read_set(char* args[]) {
 }
 
 /* Command function prototypes */
-typedef void (*CommandFunc)(char* args[]);
+typedef void (*CommandFunc)(char* args[], int num_args);
 
-void cmd_turnOn(char* args[]);
-void cmd_turnOff(char* args[]);
-void cmd_print_set(char* args[]);
-void cmd_union_set(char* args[]);
-void cmd_intersect_set(char* args[]);
-void cmd_sub_set(char* args[]);
-void cmd_symdiff_set(char* args[]);
-void cmd_stop(char* args[]);
+void cmd_print_set(char* args[], int num_args);
+void cmd_union_set(char* args[], int num_args);
+void cmd_intersect_set(char* args[], int num_args);
+void cmd_sub_set(char* args[], int num_args);
+void cmd_symdiff_set(char* args[], int num_args);
+void cmd_stop(char* args[], int num_args);
 
 /* Command structure */
 typedef struct {
     char* name;
     CommandFunc func;
+    int expected_args;
 } Command;
 
 Command commands[] = {
-    {"turnOn", cmd_turnOn},
-    {"turnOff", cmd_turnOff},
-    {"print_set", cmd_print_set},
-    {"union_set", cmd_union_set},
-    {"intersect_set", cmd_intersect_set},
-    {"sub_set", cmd_sub_set},
-    {"symdiff_set", cmd_symdiff_set},
-    {"read_set", read_set},
-    {"stop", cmd_stop},
-    {NULL, NULL}  /* End of commands marker */
+    {"print_set", cmd_print_set, 1},
+    {"union_set", cmd_union_set, 3},
+    {"intersect_set", cmd_intersect_set, 3},
+    {"sub_set", cmd_sub_set, 3},
+    {"symdiff_set", cmd_symdiff_set, 3},
+    {"read_set", read_set, -1},  /* -1 indicates variable number of arguments */
+    {"stop", cmd_stop, 0},
+    {NULL, NULL, 0}  /* End of commands marker */
 };
 
 int running = 1;  /* Global variable to control the loop */
 
 /* Command function implementations */
-void cmd_turnOn(char* args[]) {
+void cmd_print_set(char* args[], int num_args) {
     Set* set;
-    int bit;
-    
-    set = getSetByName(trimWhitespace(args[0]));
-    bit = strtol(trimWhitespace(args[1]), NULL, 10);
-    if (set) turnOn(*set, bit);
-    else printf("Undefined set name\n");
+    char* undefinedSet = NULL;
+
+    set = getSetByName(trimWhitespace(args[0]), &undefinedSet);
+    if (set == NULL) {
+        printf("Undefined set name: %s\n", undefinedSet);
+        return;
+    }
+
+    printf("%s: ", trimWhitespace(args[0]));
+    print_set(*set);
 }
 
-void cmd_turnOff(char* args[]) {
-    Set* set;
-    int bit;
-    
-    set = getSetByName(trimWhitespace(args[0]));
-    bit = strtol(trimWhitespace(args[1]), NULL, 10);
-    if (set) turnOff(*set, bit);
-    else printf("Undefined set name\n");
-}
-
-void cmd_print_set(char* args[]) {
-    Set* set;
-    
-    set = getSetByName(trimWhitespace(args[0]));
-    if (set) {
-        if (args[1] != NULL && strlen(trimWhitespace(args[1])) > 0) {
-            printf("Error: Extra text after end of command\n");
-        } else {
-            printf("%s: ", trimWhitespace(args[0]));
-            print_set(*set);
-        }
-    } else printf("Undefined set name\n");
-}
-
-void cmd_union_set(char* args[]) {
+void cmd_union_set(char* args[], int num_args) {
     Set* set1;
     Set* set2;
     Set* result;
-    
-    set1 = getSetByName(trimWhitespace(args[0]));
-    set2 = getSetByName(trimWhitespace(args[1]));
-    result = getSetByName(trimWhitespace(args[2]));
-    if (set1 && set2 && result) union_set(*result, *set1, *set2);
-    else printf("Undefined set names\n");
+    char* undefinedSet = NULL;
+
+    set1 = getSetByName(trimWhitespace(args[0]), &undefinedSet);
+    if (set1 == NULL) {
+        printf("Undefined set name: %s\n", undefinedSet);
+        return;
+    }
+    set2 = getSetByName(trimWhitespace(args[1]), &undefinedSet);
+    if (set2 == NULL) {
+        printf("Undefined set name: %s\n", undefinedSet);
+        return;
+    }
+    result = getSetByName(trimWhitespace(args[2]), &undefinedSet);
+    if (result == NULL) {
+        printf("Undefined set name: %s\n", undefinedSet);
+        return;
+    }
+
+    union_set(*result, *set1, *set2);
 }
 
-void cmd_intersect_set(char* args[]) {
+void cmd_intersect_set(char* args[], int num_args) {
     Set* set1;
     Set* set2;
     Set* result;
-    
-    set1 = getSetByName(trimWhitespace(args[0]));
-    set2 = getSetByName(trimWhitespace(args[1]));
-    result = getSetByName(trimWhitespace(args[2]));
-    if (set1 && set2 && result) intersect_set(*result, *set1, *set2);
-    else printf("Undefined set names\n");
+    char* undefinedSet = NULL;
+
+    set1 = getSetByName(trimWhitespace(args[0]), &undefinedSet);
+    if (set1 == NULL) {
+        printf("Undefined set name: %s\n", undefinedSet);
+        return;
+    }
+    set2 = getSetByName(trimWhitespace(args[1]), &undefinedSet);
+    if (set2 == NULL) {
+        printf("Undefined set name: %s\n", undefinedSet);
+        return;
+    }
+    result = getSetByName(trimWhitespace(args[2]), &undefinedSet);
+    if (result == NULL) {
+        printf("Undefined set name: %s\n", undefinedSet);
+        return;
+    }
+
+    intersect_set(*result, *set1, *set2);
 }
 
-void cmd_sub_set(char* args[]) {
+void cmd_sub_set(char* args[], int num_args) {
     Set* set1;
     Set* set2;
     Set* result;
-    
-    set1 = getSetByName(trimWhitespace(args[0]));
-    set2 = getSetByName(trimWhitespace(args[1]));
-    result = getSetByName(trimWhitespace(args[2]));
-    if (set1 && set2 && result) sub_set(*result, *set1, *set2);
-    else printf("Undefined set names\n");
+    char* undefinedSet = NULL;
+
+    set1 = getSetByName(trimWhitespace(args[0]), &undefinedSet);
+    if (set1 == NULL) {
+        printf("Undefined set name: %s\n", undefinedSet);
+        return;
+    }
+    set2 = getSetByName(trimWhitespace(args[1]), &undefinedSet);
+    if (set2 == NULL) {
+        printf("Undefined set name: %s\n", undefinedSet);
+        return;
+    }
+    result = getSetByName(trimWhitespace(args[2]), &undefinedSet);
+    if (result == NULL) {
+        printf("Undefined set name: %s\n", undefinedSet);
+        return;
+    }
+
+    sub_set(*result, *set1, *set2);
 }
 
-void cmd_symdiff_set(char* args[]) {
+void cmd_symdiff_set(char* args[], int num_args) {
     Set* set1;
     Set* set2;
     Set* result;
-    
-    set1 = getSetByName(trimWhitespace(args[0]));
-    set2 = getSetByName(trimWhitespace(args[1]));
-    result = getSetByName(trimWhitespace(args[2]));
-    if (set1 && set2 && result) symdiff_set(*result, *set1, *set2);
-    else printf("Undefined set names\n");
+    char* undefinedSet = NULL;
+
+    set1 = getSetByName(trimWhitespace(args[0]), &undefinedSet);
+    if (set1 == NULL) {
+        printf("Undefined set name: %s\n", undefinedSet);
+        return;
+    }
+    set2 = getSetByName(trimWhitespace(args[1]), &undefinedSet);
+    if (set2 == NULL) {
+        printf("Undefined set name: %s\n", undefinedSet);
+        return;
+    }
+    result = getSetByName(trimWhitespace(args[2]), &undefinedSet);
+    if (result == NULL) {
+        printf("Undefined set name: %s\n", undefinedSet);
+        return;
+    }
+
+    symdiff_set(*result, *set1, *set2);
 }
 
-void cmd_stop(char* args[]) {
+void cmd_stop(char* args[], int num_args) {
     running = 0;  /* Set the running flag to 0 to stop the loop */
 }
 
@@ -304,7 +341,11 @@ void parseAndExecuteCommand(char* input) {
     /* Find and execute the command */
     for (i = 0; commands[i].name != NULL; i++) {
         if (strcmp(tokens[0], commands[i].name) == 0) {
-            commands[i].func(tokens + 1); /* Pass the arguments to the command function */
+            if (commands[i].expected_args != -1 && num_tokens - 1 != commands[i].expected_args) {
+                printf("Error: Extra text after end of command\n");
+                return;
+            }
+            commands[i].func(tokens + 1, num_tokens - 1); /* Pass the arguments to the command function */
             return;
         }
     }
@@ -328,7 +369,13 @@ int main() {
         if (fgets(input, sizeof(input), stdin) != NULL) {
             /* Remove the newline character at the end if present */
             input[strcspn(input, "\n")] = '\0';
-            parseAndExecuteCommand(input);
+            
+            /* Check for trailing comma */
+            if (input[strlen(input) - 1] == ',') {
+                printf("Error: Extra text after end of command\n");
+            } else {
+                parseAndExecuteCommand(input);
+            }
         }
     }
 
