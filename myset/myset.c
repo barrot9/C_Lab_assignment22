@@ -159,12 +159,12 @@ void parseAndExecuteCommand(char* input) {
 
     for (int i = 0; input[i] != '\0'; i++) {
         if (input[i] == ',' && (i == 0 || input[i - 1] == ' ' || input[i - 1] == '\t')) {
-            normalizedInput[j++] = ',';
+            normalizedInput[j++] = ',';  /* Handle leading commas */ 
         } else if (input[i] == ',' && input[i + 1] == ' ') {
-            normalizedInput[j++] = ',';
+            normalizedInput[j++] = ',';  /* Handle trailing commas */ 
         } else if (input[i] == ' ' || input[i] == '\t') {
             if (j > 0 && normalizedInput[j - 1] != ' ' && normalizedInput[j - 1] != ',') {
-                normalizedInput[j++] = ' ';
+                normalizedInput[j++] = ' ';  /* Handle multiple spaces/tabs */ 
             }
         } else {
             normalizedInput[j++] = input[i];
@@ -183,6 +183,7 @@ void parseAndExecuteCommand(char* input) {
     int num_tokens = 0;
     char* token;
 
+    /* Tokenize the input string */
     token = strtok(normalizedInput, " ,");
     while (token != NULL && num_tokens < 20) {
         tokens[num_tokens++] = token;
@@ -198,10 +199,12 @@ void parseAndExecuteCommand(char* input) {
     /* Find and execute the command */
     for (int i = 0; commands[i].name != NULL; i++) {
         if (strcmp(tokens[0], commands[i].name) == 0) {
+            /* Check if there are missing parameters */
             if (commands[i].expected_args != -1 && num_tokens - 1 < commands[i].expected_args) {
                 printf("Missing parameter\n");
                 return;
             }
+            /* Check if there are extra parameters */
             if (commands[i].expected_args != -1 && num_tokens - 1 > commands[i].expected_args) {
                 printf("Error: Extra text after end of command\n");
                 return;
@@ -213,11 +216,13 @@ void parseAndExecuteCommand(char* input) {
                     return;
                 }
             }
+            /* Execute the command function */
             commands[i].func(tokens + 1, num_tokens - 1); /* Pass the arguments to the command function */
             return;
         }
     }
 
+    /* Command not found */
     printf("Undefined command name: %s\n", tokens[0]);
 }
 
@@ -237,6 +242,7 @@ void read_set(char* args[], int num_args) {
         }
     }
 
+    /* Get the set by its name */
     set = getSetByName(trimWhitespace(args[0]), &undefinedSet);
     if (set == NULL) {
         printf("Undefined set name: %s\n", undefinedSet);
@@ -254,6 +260,7 @@ void read_set(char* args[], int num_args) {
             printf("Invalid set member %s - not an integer\n", trimmedArg);
             return;
         }
+        /* Check for end of input (-1) */
         if (bit == -1) {
             end_with_minus_one = 1;
             /* Check for any non-whitespace characters after -1 */
@@ -265,12 +272,15 @@ void read_set(char* args[], int num_args) {
             }
             break;  /* End of input */
         }
+        /* Check for bit value out of range */
         if (bit < 0 || bit > 127) {
             printf("Invalid set member %d - value is out of range\n", bit);
             return;
         }
+        /* Turn on the bit in the set */
         turnOn(*set, bit);
     }
+    /* Check if input was correctly terminated with -1 */
     if (!end_with_minus_one) {
         printf("List of set members is not terminated correctly (missing -1 value)\n");
         return;
@@ -278,56 +288,68 @@ void read_set(char* args[], int num_args) {
 }
 
 /* Command function implementations */
+
+/* Function to turn on a bit in a set */
 void cmd_turnOn(char* args[], int num_args) {
     Set* set;
     int bit;
     char* undefinedSet = NULL;
 
+    /* Get the set by its name */
     set = getSetByName(trimWhitespace(args[0]), &undefinedSet);
     if (set == NULL) {
         printf("Undefined set name: %s\n", undefinedSet);
         return;
     }
 
+    /* Convert the argument to integer and turn on the bit */
     bit = strtol(trimWhitespace(args[1]), NULL, 10);
     turnOn(*set, bit);
 }
 
+/* Function to turn off a bit in a set */
 void cmd_turnOff(char* args[], int num_args) {
     Set* set;
     int bit;
     char* undefinedSet = NULL;
 
+    /* Get the set by its name */
     set = getSetByName(trimWhitespace(args[0]), &undefinedSet);
     if (set == NULL) {
         printf("Undefined set name: %s\n", undefinedSet);
         return;
     }
 
+    /* Convert the argument to integer and turn off the bit */
     bit = strtol(trimWhitespace(args[1]), NULL, 10);
     turnOff(*set, bit);
 }
 
+/* Function to print the bits that are on in a set */
 void cmd_print_set(char* args[], int num_args) {
     Set* set;
     char* undefinedSet = NULL;
 
+    /* Get the set by its name */
     set = getSetByName(trimWhitespace(args[0]), &undefinedSet);
     if (set == NULL) {
         printf("Undefined set name: %s\n", undefinedSet);
         return;
     }
 
+    /* Print the set name and the bits that are on */
     printf("%s: ", trimWhitespace(args[0]));
     print_set(*set);
 }
 
+/* Function to perform a union of two sets and store the result in a third set */
 void cmd_union_set(char* args[], int num_args) {
     Set* set1;
     Set* set2;
     Set* result;
     char* undefinedSet = NULL;
 
+    /* Get the sets by their names */
     set1 = getSetByName(trimWhitespace(args[0]), &undefinedSet);
     if (set1 == NULL) {
         printf("Undefined set name: %s\n", undefinedSet);
@@ -344,15 +366,18 @@ void cmd_union_set(char* args[], int num_args) {
         return;
     }
 
+    /* Perform the union operation */
     union_set(*result, *set1, *set2);
 }
 
+/* Function to perform an intersection of two sets and store the result in a third set */
 void cmd_intersect_set(char* args[], int num_args) {
     Set* set1;
     Set* set2;
     Set* result;
     char* undefinedSet = NULL;
 
+    /* Get the sets by their names */
     set1 = getSetByName(trimWhitespace(args[0]), &undefinedSet);
     if (set1 == NULL) {
         printf("Undefined set name: %s\n", undefinedSet);
@@ -369,15 +394,18 @@ void cmd_intersect_set(char* args[], int num_args) {
         return;
     }
 
+    /* Perform the intersection operation */
     intersect_set(*result, *set1, *set2);
 }
 
+/* Function to subtract one set from another and store the result in a third set */
 void cmd_sub_set(char* args[], int num_args) {
     Set* set1;
     Set* set2;
     Set* result;
     char* undefinedSet = NULL;
 
+    /* Get the sets by their names */
     set1 = getSetByName(trimWhitespace(args[0]), &undefinedSet);
     if (set1 == NULL) {
         printf("Undefined set name: %s\n", undefinedSet);
@@ -394,15 +422,18 @@ void cmd_sub_set(char* args[], int num_args) {
         return;
     }
 
+    /* Perform the subtraction operation */
     sub_set(*result, *set1, *set2);
 }
 
+/* Function to perform a symmetric difference of two sets and store the result in a third set */
 void cmd_symdiff_set(char* args[], int num_args) {
     Set* set1;
     Set* set2;
     Set* result;
     char* undefinedSet = NULL;
 
+    /* Get the sets by their names */
     set1 = getSetByName(trimWhitespace(args[0]), &undefinedSet);
     if (set1 == NULL) {
         printf("Undefined set name: %s\n", undefinedSet);
@@ -419,9 +450,11 @@ void cmd_symdiff_set(char* args[], int num_args) {
         return;
     }
 
+    /* Perform the symmetric difference operation */
     symdiff_set(*result, *set1, *set2);
 }
 
+/* Function to stop the program */
 void cmd_stop(char* args[], int num_args) {
     running = 0;  /* Set the running flag to 0 to stop the loop */
 }
