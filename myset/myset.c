@@ -151,7 +151,6 @@ char* trimWhitespace(char* str) {
     return str;
 }
 
-/* Function to parse user input and call the appropriate command */
 void parseAndExecuteCommand(char* input) {
     /* Normalize the input by removing extra spaces and handling commas properly */
     char normalizedInput[256];
@@ -216,6 +215,26 @@ void parseAndExecuteCommand(char* input) {
                     return;
                 }
             }
+
+            /* Check for missing commas in the original input string */
+            if (commands[i].expected_args > 1) {
+                int commas_needed = commands[i].expected_args - 1;
+                int commas_found = 0;
+                for (int k = 0; input[k] != '\0'; k++) {
+                    if (input[k] == ',') {
+                        commas_found++;
+                    }
+                }
+                if (commas_found < commas_needed) {
+                    printf("Error: missing comma\n");
+                    return;
+                }
+                if (commas_found > commas_needed) {
+                    printf("Error: illigal comma\n");
+                    return;
+                }
+            }
+
             /* Execute the command function */
             commands[i].func(tokens + 1, num_tokens - 1); /* Pass the arguments to the command function */
             return;
