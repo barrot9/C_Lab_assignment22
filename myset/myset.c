@@ -30,6 +30,7 @@ void cmd_sub_set(char* args[], int num_args);
 void cmd_symdiff_set(char* args[], int num_args);
 void cmd_stop(char* args[], int num_args);
 void parseAndExecuteCommand(char* input);
+int getAndValidateSets(char* args[], Set** set1, Set** set2, Set** result, int expectedArgs);
 
 /* Command function prototypes */
 typedef void (*CommandFunc)(char* args[], int num_args);
@@ -149,6 +150,43 @@ char* trimWhitespace(char* str) {
     end[1] = '\0';
 
     return str;
+}
+
+/* function to check if all set names were inserted correctly */
+int getAndValidateSets(char* args[], Set** set1, Set** set2, Set** result, int expectedArgs) {
+    char* undefinedSet = NULL;
+
+    /* Validate the first set if expectedArgs > 0 */
+    if (expectedArgs > 0) {
+        *set1 = getSetByName(trimWhitespace(args[0]), &undefinedSet);
+        if (*set1 == NULL) {
+            /* Print an error message if the set name is undefined */
+            printf("Undefined set name: %s\n", undefinedSet);
+            return 0; /* Return 0 to indicate failure */
+        }
+    }
+
+    /* Validate the second set if expectedArgs > 1 */
+    if (expectedArgs > 1) {
+        *set2 = getSetByName(trimWhitespace(args[1]), &undefinedSet);
+        if (*set2 == NULL) {
+            /* Print an error message if the set name is undefined */
+            printf("Undefined set name: %s\n", undefinedSet);
+            return 0; /* Return 0 to indicate failure */
+        }
+    }
+
+    /* Validate the result set if expectedArgs > 2 */
+    if (expectedArgs > 2) {
+        *result = getSetByName(trimWhitespace(args[2]), &undefinedSet);
+        if (*result == NULL) {
+            /* Print an error message if the set name is undefined */
+            printf("Undefined set name: %s\n", undefinedSet);
+            return 0; /* Return 0 to indicate failure */
+        }
+    }
+
+    return 1; /* Return 1 to indicate success */
 }
 
 void parseAndExecuteCommand(char* input) {
@@ -328,7 +366,6 @@ void read_set(char* args[], int num_args) {
 /* Function to turn on a bit in a set */
 void cmd_turnOn(char* args[], int num_args) {
     Set* set;
-    int bit;
     char* undefinedSet = NULL;
 
     /* Get the set by its name */
@@ -339,14 +376,13 @@ void cmd_turnOn(char* args[], int num_args) {
     }
 
     /* Convert the argument to integer and turn on the bit */
-    bit = strtol(trimWhitespace(args[1]), NULL, 10);
+    int bit = strtol(trimWhitespace(args[1]), NULL, 10);
     turnOn(*set, bit);
 }
 
 /* Function to turn off a bit in a set */
 void cmd_turnOff(char* args[], int num_args) {
     Set* set;
-    int bit;
     char* undefinedSet = NULL;
 
     /* Get the set by its name */
@@ -357,7 +393,7 @@ void cmd_turnOff(char* args[], int num_args) {
     }
 
     /* Convert the argument to integer and turn off the bit */
-    bit = strtol(trimWhitespace(args[1]), NULL, 10);
+    int bit = strtol(trimWhitespace(args[1]), NULL, 10);
     turnOff(*set, bit);
 }
 
@@ -383,27 +419,10 @@ void cmd_union_set(char* args[], int num_args) {
     Set* set1;
     Set* set2;
     Set* result;
-    char* undefinedSet = NULL;
 
-    /* Get the sets by their names */
-    set1 = getSetByName(trimWhitespace(args[0]), &undefinedSet);
-    if (set1 == NULL) {
-        printf("Undefined set name: %s\n", undefinedSet);
-        return;
+    if (getAndValidateSets(args, &set1, &set2, &result, 3)) {
+        union_set(*result, *set1, *set2);
     }
-    set2 = getSetByName(trimWhitespace(args[1]), &undefinedSet);
-    if (set2 == NULL) {
-        printf("Undefined set name: %s\n", undefinedSet);
-        return;
-    }
-    result = getSetByName(trimWhitespace(args[2]), &undefinedSet);
-    if (result == NULL) {
-        printf("Undefined set name: %s\n", undefinedSet);
-        return;
-    }
-
-    /* Perform the union operation */
-    union_set(*result, *set1, *set2);
 }
 
 /* Function to perform an intersection of two sets and store the result in a third set */
@@ -411,27 +430,10 @@ void cmd_intersect_set(char* args[], int num_args) {
     Set* set1;
     Set* set2;
     Set* result;
-    char* undefinedSet = NULL;
 
-    /* Get the sets by their names */
-    set1 = getSetByName(trimWhitespace(args[0]), &undefinedSet);
-    if (set1 == NULL) {
-        printf("Undefined set name: %s\n", undefinedSet);
-        return;
+    if (getAndValidateSets(args, &set1, &set2, &result, 3)) {
+        intersect_set(*result, *set1, *set2);
     }
-    set2 = getSetByName(trimWhitespace(args[1]), &undefinedSet);
-    if (set2 == NULL) {
-        printf("Undefined set name: %s\n", undefinedSet);
-        return;
-    }
-    result = getSetByName(trimWhitespace(args[2]), &undefinedSet);
-    if (result == NULL) {
-        printf("Undefined set name: %s\n", undefinedSet);
-        return;
-    }
-
-    /* Perform the intersection operation */
-    intersect_set(*result, *set1, *set2);
 }
 
 /* Function to subtract one set from another and store the result in a third set */
@@ -439,27 +441,10 @@ void cmd_sub_set(char* args[], int num_args) {
     Set* set1;
     Set* set2;
     Set* result;
-    char* undefinedSet = NULL;
 
-    /* Get the sets by their names */
-    set1 = getSetByName(trimWhitespace(args[0]), &undefinedSet);
-    if (set1 == NULL) {
-        printf("Undefined set name: %s\n", undefinedSet);
-        return;
+    if (getAndValidateSets(args, &set1, &set2, &result, 3)) {
+        sub_set(*result, *set1, *set2);
     }
-    set2 = getSetByName(trimWhitespace(args[1]), &undefinedSet);
-    if (set2 == NULL) {
-        printf("Undefined set name: %s\n", undefinedSet);
-        return;
-    }
-    result = getSetByName(trimWhitespace(args[2]), &undefinedSet);
-    if (result == NULL) {
-        printf("Undefined set name: %s\n", undefinedSet);
-        return;
-    }
-
-    /* Perform the subtraction operation */
-    sub_set(*result, *set1, *set2);
 }
 
 /* Function to perform a symmetric difference of two sets and store the result in a third set */
@@ -467,27 +452,10 @@ void cmd_symdiff_set(char* args[], int num_args) {
     Set* set1;
     Set* set2;
     Set* result;
-    char* undefinedSet = NULL;
 
-    /* Get the sets by their names */
-    set1 = getSetByName(trimWhitespace(args[0]), &undefinedSet);
-    if (set1 == NULL) {
-        printf("Undefined set name: %s\n", undefinedSet);
-        return;
+    if (getAndValidateSets(args, &set1, &set2, &result, 3)) {
+        symdiff_set(*result, *set1, *set2);
     }
-    set2 = getSetByName(trimWhitespace(args[1]), &undefinedSet);
-    if (set2 == NULL) {
-        printf("Undefined set name: %s\n", undefinedSet);
-        return;
-    }
-    result = getSetByName(trimWhitespace(args[2]), &undefinedSet);
-    if (result == NULL) {
-        printf("Undefined set name: %s\n", undefinedSet);
-        return;
-    }
-
-    /* Perform the symmetric difference operation */
-    symdiff_set(*result, *set1, *set2);
 }
 
 /* Function to stop the program */
@@ -546,6 +514,5 @@ int main(int argc, char *argv[]) {
         printf("No stop command was given at the end of file, program will terminate automaticaly\n");
         return 1;
     }
-
     return 0;
 }
