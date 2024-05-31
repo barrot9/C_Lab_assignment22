@@ -253,19 +253,29 @@ void read_set(char* args[], int num_args) {
     int i, j;
     char* undefinedSet = NULL;
 
-    /* Check for multiple consecutive commas */
-    for (i = 1; i < num_args; i++) {
-        if (strlen(trimWhitespace(args[i])) == 0) {
-            printf("Error: Multiple consecutive commas\n");
-            return;
-        }
-    }
-
     /* Get the set by its name */
     set = getSetByName(trimWhitespace(args[0]), &undefinedSet);
     if (set == NULL) {
         printf("Undefined set name: %s\n", undefinedSet);
         return;
+    }
+
+      /* Check if set members are missing */
+    if (num_args < 2) {
+        printf("Error: missing set members\n");
+        return;
+    }
+
+    /* Initialize the set to 0 */
+    memset(*set, 0, sizeof(Set));
+
+    /* Check for multiple consecutive commas */
+    for (i = 1; i < num_args; i++) {
+        if (strlen(trimWhitespace(args[i])) == 0) {
+            memset(*set, 0, sizeof(Set));
+            printf("Error: Multiple consecutive commas\n");
+            return;
+        }
     }
 
     end_with_minus_one = 0;
@@ -276,6 +286,7 @@ void read_set(char* args[], int num_args) {
         bit = strtol(trimmedArg, &endptr, 10);
         /* Check for valid integer and within range */
         if (*endptr != '\0' || endptr == trimmedArg) {
+            memset(*set, 0, sizeof(Set));
             printf("Invalid set member %s - not an integer\n", trimmedArg);
             return;
         }
@@ -285,6 +296,7 @@ void read_set(char* args[], int num_args) {
             /* Check for any non-whitespace characters after -1 */
             for (j = i + 1; j < num_args; j++) {
                 if (strlen(trimWhitespace(args[j])) != 0) {
+                    memset(*set, 0, sizeof(Set));
                     printf("Error: Extra text after end of command\n");
                     return;
                 }
@@ -293,6 +305,7 @@ void read_set(char* args[], int num_args) {
         }
         /* Check for bit value out of range */
         if (bit < 0 || bit > 127) {
+            memset(*set, 0, sizeof(Set));
             printf("Invalid set member %d - value is out of range\n", bit);
             return;
         }
@@ -301,6 +314,7 @@ void read_set(char* args[], int num_args) {
     }
     /* Check if input was correctly terminated with -1 */
     if (!end_with_minus_one) {
+        memset(*set, 0, sizeof(Set));
         printf("List of set members is not terminated correctly (missing -1 value)\n");
         return;
     }
