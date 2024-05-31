@@ -153,7 +153,7 @@ char* trimWhitespace(char* str) {
 
 void parseAndExecuteCommand(char* input) {
     /* Print the user input */
-    printf("Input: %s\n", input);
+    printf("\nCommand: %s\n", input);
 
     /* Normalize the input by removing extra spaces and handling commas properly */
     char normalizedInput[256];
@@ -177,7 +177,7 @@ void parseAndExecuteCommand(char* input) {
     /* Check for multiple consecutive commas */
     char* p = strstr(normalizedInput, ",,");
     if (p != NULL) {
-        printf("Error: Multiple consecutive commas\n");
+        printf("Multiple consecutive commas\n");
         return;
     }
 
@@ -208,16 +208,16 @@ void parseAndExecuteCommand(char* input) {
             }
             /* Check if there are extra parameters */
             if (commands[i].expected_args != -1 && num_tokens - 1 > commands[i].expected_args) {
-                printf("Error: Extra text after end of command\n");
+                printf("Extra text after end of command\n");
                 return;
             }
             /* Check for empty arguments (which result from consecutive commas) */
-            for (int k = 1; k < num_tokens; k++) {
-                if (strlen(trimWhitespace(tokens[k])) == 0) {
-                    printf("Error: Multiple consecutive commas\n");
-                    return;
-                }
-            }
+            // for (int k = 1; k < num_tokens; k++) {
+            //     if (strlen(trimWhitespace(tokens[k])) == 0) {
+            //         printf("Multiple consecutive commas\n");
+            //         return;
+            //     }
+            // }
 
             /* Check for missing commas in the original input string */
             if (commands[i].expected_args > 1) {
@@ -229,11 +229,11 @@ void parseAndExecuteCommand(char* input) {
                     }
                 }
                 if (commas_found < commas_needed) {
-                    printf("Error: missing comma\n");
+                    printf("Missing comma\n");
                     return;
                 }
                 if (commas_found > commas_needed) {
-                    printf("Error: illigal comma\n");
+                    printf("Illigal comma\n");
                     return;
                 }
             }
@@ -265,7 +265,7 @@ void read_set(char* args[], int num_args) {
 
       /* Check if set members are missing */
     if (num_args < 2) {
-        printf("Error: missing set members\n");
+        printf("Missing set members\n");
         return;
     }
 
@@ -276,7 +276,7 @@ void read_set(char* args[], int num_args) {
     for (i = 1; i < num_args; i++) {
         if (strlen(trimWhitespace(args[i])) == 0) {
             memset(*set, 0, sizeof(Set));
-            printf("Error: Multiple consecutive commas\n");
+            printf("Multiple consecutive commas\n");
             return;
         }
     }
@@ -300,7 +300,7 @@ void read_set(char* args[], int num_args) {
             for (j = i + 1; j < num_args; j++) {
                 if (strlen(trimWhitespace(args[j])) != 0) {
                     memset(*set, 0, sizeof(Set));
-                    printf("Error: Extra text after end of command\n");
+                    printf("Extra text after end of command\n");
                     return;
                 }
             }
@@ -495,7 +495,10 @@ void cmd_stop(char* args[], int num_args) {
     running = 0;  /* Set the running flag to 0 to stop the loop */
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    FILE *inputFile = NULL;
+    int stopCommandGiven = 0;
+
     /* Initialize sets to 0 */
     memset(SETA, 0, sizeof(Set));
     memset(SETB, 0, sizeof(Set));
@@ -504,21 +507,44 @@ int main() {
     memset(SETE, 0, sizeof(Set));
     memset(SETF, 0, sizeof(Set));
 
-    /* Read commands from the user in a loop */
+    if (argc > 1) {
+        inputFile = fopen(argv[1], "r");
+        if (inputFile == NULL) {
+            printf("Could not open input file %s\n", argv[1]);
+            return 1;
+        }
+    }
+
+    /* Read commands from the user or file in a loop */
     char input[256];
     while (running) {
-        printf("Enter a command > ");
-        if (fgets(input, sizeof(input), stdin) != NULL) {
+        if (inputFile != NULL) {
+            if (fgets(input, sizeof(input), inputFile) == NULL) {
+                break;
+            }
             /* Remove the newline character at the end if present */
             input[strcspn(input, "\n")] = '\0';
-            
-            /* Check for trailing comma */
-            if (input[strlen(input) - 1] == ',') {
-                printf("Error: Extra text after end of command\n");
-            } else {
-                parseAndExecuteCommand(input);
+        } else {
+            printf("\nEnter a command > ");
+            if (fgets(input, sizeof(input), stdin) == NULL) {
+                break;
             }
+            /* Remove the newline character at the end if present */
+            input[strcspn(input, "\n")] = '\0';
         }
+        parseAndExecuteCommand(input);
+        if (strcmp(input, "stop") == 0) {
+            stopCommandGiven = 1;
+            }
+    }
+
+    if (inputFile != NULL) {
+        fclose(inputFile);
+    }
+
+    if (!stopCommandGiven) {
+        printf("No stop command was given at the end of file, program will terminate automaticaly\n");
+        return 1;
     }
 
     return 0;
