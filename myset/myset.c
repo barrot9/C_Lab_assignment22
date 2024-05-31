@@ -152,6 +152,9 @@ char* trimWhitespace(char* str) {
 }
 
 void parseAndExecuteCommand(char* input) {
+    /* Print the user input */
+    printf("Input: %s\n", input);
+
     /* Normalize the input by removing extra spaces and handling commas properly */
     char normalizedInput[256];
     int j = 0;
