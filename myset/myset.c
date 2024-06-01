@@ -500,7 +500,12 @@ int main(int argc, char *argv[]) {
             /* Remove the newline character at the end if present */
             input[strcspn(input, "\n")] = '\0';
         }
-        parseAndExecuteCommand(input);
+        /* Check for trailing comma */
+        if (input[strlen(input) - 1] == ',') {
+            printf("Extra comma after end of command\n");
+        } else {
+            parseAndExecuteCommand(input);
+        }
         if (strcmp(input, "stop") == 0) {
             stopCommandGiven = 1;
             }
@@ -511,7 +516,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (!stopCommandGiven) {
-        printf("No stop command was given at the end of file, program will terminate automaticaly\n");
+        printf("No stop command was given, program will terminate automaticaly\n");
         return 1;
     }
     return 0;
