@@ -182,14 +182,20 @@ int getAndValidateSets(char* args[], Set** set1, Set** set2, Set** result, int e
 }
 
 void parseAndExecuteCommand(char* input) {
+
+    char normalizedInput[256];
+    int j = 0;
+    int i;
+    char* p;
+    char* tokens[20];
+    int num_tokens = 0;
+    char* token;
+    int k;
+
     /* Print the user input */
     printf("\nCommand: %s\n", input);
 
-    /* Normalize the input by removing extra spaces and handling commas properly */
-    char normalizedInput[256];
-    int j = 0;
-
-    for (int i = 0; input[i] != '\0'; i++) {
+    for (i = 0; input[i] != '\0'; i++) {
         if (input[i] == ',' && (i == 0 || input[i - 1] == ' ' || input[i - 1] == '\t')) {
             normalizedInput[j++] = ',';  /* Handle leading commas */ 
         } else if (input[i] == ',' && input[i + 1] == ' ') {
@@ -205,15 +211,11 @@ void parseAndExecuteCommand(char* input) {
     normalizedInput[j] = '\0';
 
     /* Check for multiple consecutive commas */
-    char* p = strstr(normalizedInput, ",,");
+    p = strstr(normalizedInput, ",,");
     if (p != NULL) {
         printf("Multiple consecutive commas\n");
         return;
     }
-
-    char* tokens[20];
-    int num_tokens = 0;
-    char* token;
 
     /* Tokenize the input string */
     token = strtok(normalizedInput, " ,");
@@ -229,7 +231,7 @@ void parseAndExecuteCommand(char* input) {
     }
 
     /* Find and execute the command */
-    for (int i = 0; commands[i].name != NULL; i++) {
+    for (i = 0; commands[i].name != NULL; i++) {
         if (strcmp(tokens[0], commands[i].name) == 0) {
             /* Check if there are missing parameters */
             if (commands[i].expected_args != -1 && num_tokens - 1 < commands[i].expected_args) {
@@ -246,7 +248,7 @@ void parseAndExecuteCommand(char* input) {
             if (commands[i].expected_args > 1) {
                 int commas_needed = commands[i].expected_args - 1;
                 int commas_found = 0;
-                for (int k = 0; input[k] != '\0'; k++) {
+                for (k = 0; input[k] != '\0'; k++) {
                     if (input[k] == ',') {
                         commas_found++;
                     }
@@ -256,7 +258,7 @@ void parseAndExecuteCommand(char* input) {
                     return;
                 }
                 if (commas_found > commas_needed) {
-                    printf("Illigal comma\n");
+                    printf("Illegal comma\n");
                     return;
                 }
             }
@@ -278,6 +280,8 @@ void read_set(char* args[], int num_args) {
     int end_with_minus_one;
     int i, j;
     char* undefinedSet = NULL;
+    char* trimmedArg;
+    char* endptr;
 
     /* Get the set by its name */
     set = getSetByName(trimWhitespace(args[0]), &undefinedSet);
@@ -286,7 +290,7 @@ void read_set(char* args[], int num_args) {
         return;
     }
 
-      /* Check if set members are missing */
+    /* Check if set members are missing */
     if (num_args < 2) {
         printf("Missing set members\n");
         return;
@@ -306,9 +310,8 @@ void read_set(char* args[], int num_args) {
 
     end_with_minus_one = 0;
     for (i = 1; i < num_args; i++) {
-        char* trimmedArg = trimWhitespace(args[i]);
+        trimmedArg = trimWhitespace(args[i]);
         /* Convert argument to integer */
-        char *endptr;
         bit = strtol(trimmedArg, &endptr, 10);
         /* Check for valid integer and within range */
         if (*endptr != '\0' || endptr == trimmedArg) {
@@ -350,6 +353,7 @@ void read_set(char* args[], int num_args) {
 void cmd_turnOn(char* args[], int num_args) {
     Set* set;
     char* undefinedSet = NULL;
+    int bit;
 
     /* Get the set by its name */
     set = getSetByName(trimWhitespace(args[0]), &undefinedSet);
@@ -359,7 +363,7 @@ void cmd_turnOn(char* args[], int num_args) {
     }
 
     /* Convert the argument to integer and turn on the bit */
-    int bit = strtol(trimWhitespace(args[1]), NULL, 10);
+    bit = strtol(trimWhitespace(args[1]), NULL, 10);
     turnOn(*set, bit);
 }
 
@@ -432,6 +436,7 @@ void cmd_stop(char* args[], int num_args) {
 int main(int argc, char *argv[]) {
     FILE *inputFile = NULL;
     int stopCommandGiven = 0;
+    char input[256];
 
     /* Initialize sets to 0 */
     memset(SETA, 0, sizeof(Set));
@@ -450,7 +455,6 @@ int main(int argc, char *argv[]) {
     }
 
     /* Read commands from the user or file in a loop */
-    char input[256];
     while (running) {
         if (inputFile != NULL) {
             if (fgets(input, sizeof(input), inputFile) == NULL) {
@@ -474,7 +478,7 @@ int main(int argc, char *argv[]) {
         }
         if (strcmp(input, "stop") == 0) {
             stopCommandGiven = 1;
-            }
+        }
     }
 
     if (inputFile != NULL) {
@@ -482,7 +486,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (!stopCommandGiven) {
-        printf("No stop command was given, program will terminate automaticaly\n");
+        printf("No stop command was given, program will terminate automatically\n");
         return 1;
     }
     return 0;
