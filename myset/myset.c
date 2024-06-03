@@ -11,7 +11,6 @@ Set SETA, SETB, SETC, SETD, SETE, SETF;
 
 /* Function prototypes */
 void turnOn(Set set, int bit);
-void turnOff(Set set, int bit);
 int isOn(Set set, int bit);
 void print_set(Set set);
 void union_set(Set result, Set set1, Set set2);
@@ -22,7 +21,6 @@ Set* getSetByName(char* name, char** undefinedSet);
 char* trimWhitespace(char* str);
 void read_set(char* args[], int num_args);
 void cmd_turnOn(char* args[], int num_args);
-void cmd_turnOff(char* args[], int num_args);
 void cmd_print_set(char* args[], int num_args);
 void cmd_union_set(char* args[], int num_args);
 void cmd_intersect_set(char* args[], int num_args);
@@ -45,7 +43,6 @@ typedef struct {
 /* Commands array */
 Command commands[] = {
     {"turnOn", cmd_turnOn, 2},
-    {"turnOff", cmd_turnOff, 2},
     {"print_set", cmd_print_set, 1},
     {"union_set", cmd_union_set, 3},
     {"intersect_set", cmd_intersect_set, 3},
@@ -61,11 +58,6 @@ int running = 1;  /* Global variable to control the loop */
 /* Function to turn on a bit in a given set */
 void turnOn(Set set, int bit) {
     set[bit / 8] |= (1 << (bit % 8));
-}
-
-/* Function to turn off a bit in a given set */
-void turnOff(Set set, int bit) {
-    set[bit / 8] &= ~(1 << (bit % 8));
 }
 
 /* Function to check if a bit is on in a given set */
@@ -139,7 +131,7 @@ char* trimWhitespace(char* str) {
     /* Trim leading whitespace */
     while (isspace((unsigned char) *str)) str++;
 
-    if (*str == 0)  /* All spaces? */
+    if (*str == 0)  /* check if command is empty or all spaces */
         return str;
 
     /* Trim trailing whitespace */
@@ -249,13 +241,6 @@ void parseAndExecuteCommand(char* input) {
                 printf("Extra text after end of command\n");
                 return;
             }
-            /* Check for empty arguments (which result from consecutive commas) */
-            // for (int k = 1; k < num_tokens; k++) {
-            //     if (strlen(trimWhitespace(tokens[k])) == 0) {
-            //         printf("Multiple consecutive commas\n");
-            //         return;
-            //     }
-            // }
 
             /* Check for missing commas in the original input string */
             if (commands[i].expected_args > 1) {
@@ -361,8 +346,6 @@ void read_set(char* args[], int num_args) {
     }
 }
 
-/* Command function implementations */
-
 /* Function to turn on a bit in a set */
 void cmd_turnOn(char* args[], int num_args) {
     Set* set;
@@ -378,23 +361,6 @@ void cmd_turnOn(char* args[], int num_args) {
     /* Convert the argument to integer and turn on the bit */
     int bit = strtol(trimWhitespace(args[1]), NULL, 10);
     turnOn(*set, bit);
-}
-
-/* Function to turn off a bit in a set */
-void cmd_turnOff(char* args[], int num_args) {
-    Set* set;
-    char* undefinedSet = NULL;
-
-    /* Get the set by its name */
-    set = getSetByName(trimWhitespace(args[0]), &undefinedSet);
-    if (set == NULL) {
-        printf("Undefined set name: %s\n", undefinedSet);
-        return;
-    }
-
-    /* Convert the argument to integer and turn off the bit */
-    int bit = strtol(trimWhitespace(args[1]), NULL, 10);
-    turnOff(*set, bit);
 }
 
 /* Function to print the bits that are on in a set */
