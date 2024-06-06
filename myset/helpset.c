@@ -200,7 +200,6 @@ void parseAndExecuteCommand(char* input, Set sets[], int* running, Command comma
     tokens[num_tokens] = NULL; /* Null-terminate the tokens array */
 
      if (num_tokens == 0) {
-     //    printf("No command provided\n");
          return;
      }
 
