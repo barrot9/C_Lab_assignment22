@@ -1,3 +1,8 @@
+/*
+    this file includes the functions
+    that perform actions on the sets.
+*/
+
 #include "set.h"
 
 /* Function to print the numbers of the bits that are on in a set */
@@ -53,6 +58,7 @@ void read_set(Set set, int bit) {
     set[bit / 8] |= (1 << (bit % 8));
 }
 
+/* stops the program when stop command given */
 void stop(char* args[], int num_args, int* running) {
     *running = 0;
 }

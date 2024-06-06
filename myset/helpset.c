@@ -1,3 +1,9 @@
+/*  
+    this file includes a helper functions to perform checks 
+    and validations before calling the referenced function
+    in a command given by the user.
+*/
+
 #include "set.h"
 
 /* Function to check if a bit is on in a given set */
@@ -73,6 +79,7 @@ int getAndValidateSets(char* args[], Set sets[], Set** set1, Set** set2, Set** r
     return 1; /* Return 1 to indicate success */
 }
 
+/* function to perform additional checks relevant before calling read_set */
 void help_read_set(char* args[], int num_args, Set sets[]) {
     Set* set;
     int bit;
@@ -156,6 +163,7 @@ void help_read_set(char* args[], int num_args, Set sets[]) {
     }
 }
 
+/* function to validate command syntax before calling the wanted function */
 void parseAndExecuteCommand(char* input, Set sets[], int* running, Command commands[]) {
     char normalizedInput[256];
     int j = 0;

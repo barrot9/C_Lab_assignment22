@@ -1,3 +1,11 @@
+/*
+    This file includes the main function,
+    where all the definitions and interactions
+    with the user is made, as well as the 
+    calls for helper functions before 
+    passing arguments to perform actions.
+*/
+
 #include "set.h"
 
 int main(int argc, char *argv[]) {

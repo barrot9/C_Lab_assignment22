@@ -1,3 +1,9 @@
+/*
+    Maman22 assignment - a program that control and perform
+    actions on sets of numbers with detailed error control.
+    @Author: Bar rot.
+*/
+
 #ifndef SET_H
 #define SET_H
 
