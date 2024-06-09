@@ -114,14 +114,6 @@ void help_read_set(char* args[], int num_args, Set sets[]) {
         }
     }
 
-    /* Check for missing commas */
-    for (i = 1; i < num_args - 1; i++) {
-        if (isdigit(args[i][0]) && isdigit(args[i + 1][0])) {
-            printf("Missing comma\n");
-            return;
-        }
-    }
-
     end_with_minus_one = 0;
     for (i = 1; i < num_args; i++) {
         trimmedArg = trimWhitespace(args[i]);
