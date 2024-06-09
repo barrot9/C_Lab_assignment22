@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (!stopCommandGiven) {
-        printf("No stop command was given, program will terminate automatically\n");
+        printf("\nEnd of file and no stop command was given, program will terminate automatically\n");
         return 1;
     }
     return 0;

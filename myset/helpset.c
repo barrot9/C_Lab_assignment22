@@ -165,6 +165,7 @@ void parseAndExecuteCommand(char* input, Set sets[], int* running, Command comma
     int num_tokens = 0;
     char* token;
     int k;
+    int comma_count = 0;
 
     /* Print the user input */
     printf("\n>%s\n", input);
@@ -199,9 +200,25 @@ void parseAndExecuteCommand(char* input, Set sets[], int* running, Command comma
     }
     tokens[num_tokens] = NULL; /* Null-terminate the tokens array */
 
-     if (num_tokens == 0) {
-         return;
-     }
+    if (num_tokens == 0) {
+        return;
+    }
+
+    /* if the command is read_set check for valid commas number */
+    if (strcmp(tokens[0], "read_set") == 0){
+            /* Count the number of commas in the original input */
+        for (i = 0; input[i] != '\0'; i++) {
+            if (input[i] == ',') {
+                comma_count++;
+            }
+        }
+
+        /* Check if the number of commas equals the number of arguments */
+        if (comma_count + 2 != num_tokens ) {
+            printf("Missing comma\n");
+            return;
+        }
+    }
 
     /* Find and execute the command */
     for (i = 0; commands[i].name != NULL; i++) {
